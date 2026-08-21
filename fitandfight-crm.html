@@ -1,0 +1,2245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fit and Fight Club CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   Fit and Fight Club — brand tokens
+   Palette taken from the corners of a fight: red corner is the
+   house accent, blue corner carries the data, and the neutrals
+   are warm gunmetal — mat rubber, tape and chalk.
+   ============================================================ */
+:root{
+  --ground:#F2F0F0; --surface:#FFFFFF; --surface-2:#F7F5F5; --surface-3:#ECE8E8;
+  --line:#E0DADA; --line-strong:#C4BBBB;
+  --ink:#141011; --ink-2:#524A4B; --ink-3:#867C7D;
+  --accent:#C81E28; --accent-hi:#9C141C; --accent-soft:#FBE6E7; --on-accent:#FFFFFF;
+  --data:#2A5FB8; --data-soft:#E5EBF8;
+  --good:#17734A; --good-soft:#DCF0E6;
+  --warn:#9E6704; --warn-soft:#F9EDD4;
+  --crit:#C81E28; --crit-soft:#FBE6E7;
+  --shadow:0 1px 2px rgba(20,16,17,.07), 0 8px 24px -14px rgba(20,16,17,.22);
+  --shadow-lg:0 26px 64px -22px rgba(20,16,17,.42);
+  --rail:238px; --radius:8px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#100D0E; --surface:#191516; --surface-2:#201B1C; --surface-3:#282223;
+    --line:#302A2B; --line-strong:#453D3E;
+    --ink:#F2EEEE; --ink-2:#ABA1A2; --ink-3:#7A6F70;
+    --accent:#F04A45; --accent-hi:#FF7A72; --accent-soft:#2E1516; --on-accent:#12090A;
+    --data:#5E9BF2; --data-soft:#14203A;
+    --good:#4CC486; --good-soft:#0F2A1D;
+    --warn:#E0A62C; --warn-soft:#2C2211;
+    --crit:#F04A45; --crit-soft:#2E1516;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -14px rgba(0,0,0,.7);
+    --shadow-lg:0 26px 64px -22px rgba(0,0,0,.85);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#100D0E; --surface:#191516; --surface-2:#201B1C; --surface-3:#282223;
+  --line:#302A2B; --line-strong:#453D3E;
+  --ink:#F2EEEE; --ink-2:#ABA1A2; --ink-3:#7A6F70;
+  --accent:#F04A45; --accent-hi:#FF7A72; --accent-soft:#2E1516; --on-accent:#12090A;
+  --data:#5E9BF2; --data-soft:#14203A;
+  --good:#4CC486; --good-soft:#0F2A1D;
+  --warn:#E0A62C; --warn-soft:#2C2211;
+  --crit:#F04A45; --crit-soft:#2E1516;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -14px rgba(0,0,0,.7);
+  --shadow-lg:0 26px 64px -22px rgba(0,0,0,.85);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{overflow-x:clip}
+body{
+  margin:0; background:var(--ground); color:var(--ink); overflow-x:clip;
+  font-family:Barlow,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+/* the fight-poster face: condensed, uppercase, used only for display */
+.disp,h1,h2,h3,h4,.kpi-val,.brand-name{
+  font-family:"Big Shoulders Display",Barlow,"Arial Narrow",sans-serif;
+  font-weight:700;letter-spacing:.005em;margin:0;text-wrap:balance;line-height:1.05;
+}
+h3{font-size:17px;text-transform:uppercase;letter-spacing:.04em}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);min-height:100vh}
+.app > *{min-width:0}
+.rail{
+  background:var(--surface);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;gap:2px;padding:0 0 14px;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.brand{display:flex;align-items:center;gap:11px;padding:16px 16px 15px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.mark{width:36px;height:36px;flex:none;border-radius:5px;overflow:hidden;display:block}
+.brand-name{font-size:20px;text-transform:uppercase;letter-spacing:.01em;line-height:.92}
+.brand-sub{font-size:10px;color:var(--ink-3);letter-spacing:.16em;text-transform:uppercase;font-weight:600;margin-top:3px}
+.nav-group{padding:9px 11px 2px}
+.nav-label{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);padding:0 8px 6px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;position:relative;
+  padding:8px 10px;border-radius:6px;border:0;background:none;cursor:pointer;
+  color:var(--ink-2);font-size:13.5px;font-weight:500;
+}
+.nav-item:hover{background:var(--surface-2);color:var(--ink)}
+.nav-item[aria-current="page"]{background:var(--surface-3);color:var(--ink);font-weight:600}
+.nav-item[aria-current="page"]::before{content:"";position:absolute;left:-11px;top:6px;bottom:6px;width:3px;background:var(--accent);border-radius:0 3px 3px 0}
+.nav-item[aria-current="page"] .ico{color:var(--accent)}
+.ico{width:17px;height:17px;flex:none;color:var(--ink-3)}
+.nav-count{margin-left:auto;font-size:11px;font-weight:600;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+.rail-foot{margin-top:auto;padding:13px 18px 0;border-top:1px solid var(--line);font-size:11px;color:var(--ink-3)}
+.creed{
+  margin:12px 11px 0;padding:11px 12px;border-radius:6px;background:var(--ink);color:var(--surface);
+  font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:14px;line-height:1.12;
+  text-transform:uppercase;letter-spacing:.015em;
+}
+.creed span{color:var(--accent-hi);display:block;font-size:9.5px;letter-spacing:.16em;margin-top:6px;font-family:Barlow,sans-serif}
+:root[data-theme="dark"] .creed span, :root:not([data-theme="light"]) .creed span{color:var(--accent)}
+
+.topbar{
+  position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:12px;padding:0 20px;height:62px;
+}
+.page-title{font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:24px;text-transform:uppercase;letter-spacing:.02em;line-height:1}
+.page-sub{font-size:12px;color:var(--ink-3);margin-top:2px}
+.branch-pick{display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:2px}
+.branch-pick button{
+  border:0;background:none;cursor:pointer;padding:5px 10px;border-radius:5px;
+  font-size:12.5px;font-weight:600;color:var(--ink-3);white-space:nowrap;
+}
+.branch-pick button:hover{color:var(--ink)}
+.branch-pick button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.search{position:relative;width:240px}
+.search input{width:100%;padding:8px 10px 8px 31px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);font-size:13px}
+.search input::placeholder{color:var(--ink-3)}
+.search .ico{position:absolute;left:9px;top:9px}
+.search-pop{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--line);
+  border-radius:8px;box-shadow:var(--shadow-lg);overflow:hidden;z-index:30;max-height:340px;overflow-y:auto;
+}
+.search-pop button{display:block;width:100%;text-align:left;padding:9px 12px;border:0;background:none;cursor:pointer;border-bottom:1px solid var(--line)}
+.search-pop button:last-child{border-bottom:0}
+.search-pop button:hover{background:var(--surface-2)}
+.view{padding:20px;max-width:1520px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* ---------- primitives ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:6px;cursor:pointer;
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+  font-size:13px;font-weight:600;white-space:nowrap;
+}
+.btn:hover{background:var(--surface-2);border-color:var(--ink-3)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn-primary:hover{background:var(--accent-hi);border-color:var(--accent-hi);color:var(--on-accent)}
+.btn-dark{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn-dark:hover{background:var(--ink-2);border-color:var(--ink-2);color:var(--surface)}
+.btn-sm{padding:4px 9px;font-size:12px;border-radius:5px}
+.btn-ghost{border-color:transparent;background:none;color:var(--ink-2)}
+.btn-ghost:hover{background:var(--surface-2);border-color:transparent;color:var(--ink)}
+.btn-danger{color:var(--crit)}
+.btn-danger:hover{background:var(--crit-soft);border-color:var(--crit)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--line)}
+.card-head .spacer{margin-left:auto}
+.card-body{padding:15px}
+.card-body.tight{padding:0}
+.muted{color:var(--ink-3)}
+.eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-3)}
+.hint{font-size:12px;color:var(--ink-3)}
+
+.pill{
+  display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:4px;
+  font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;
+  background:var(--surface-3);color:var(--ink-2);
+}
+.pill.dot::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;flex:none}
+.pill-good{background:var(--good-soft);color:var(--good)}
+.pill-warn{background:var(--warn-soft);color:var(--warn)}
+.pill-crit{background:var(--crit-soft);color:var(--crit)}
+.pill-data{background:var(--data-soft);color:var(--data)}
+.tag{display:inline-block;padding:1px 6px;border-radius:3px;background:var(--surface-3);color:var(--ink-2);font-size:10.5px;font-weight:600;letter-spacing:.03em;white-space:nowrap}
+
+.avatar{
+  width:30px;height:30px;border-radius:5px;flex:none;display:grid;place-items:center;
+  font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:14px;
+  background:var(--surface-3);color:var(--ink-2);
+}
+.avatar.lg{width:48px;height:48px;font-size:22px;border-radius:7px}
+.avatar.fighter{background:var(--ink);color:var(--surface)}
+
+/* ---------- kpi ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:11px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--stripe,var(--line-strong))}
+.kpi .eyebrow{display:block;margin-bottom:6px}
+.kpi-val{font-size:32px;letter-spacing:0;line-height:.9;font-variant-numeric:tabular-nums}
+.kpi-foot{margin-top:6px;font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.delta{font-weight:700;font-family:"IBM Plex Mono",monospace;font-size:11px}
+.delta.up{color:var(--good)} .delta.down{color:var(--crit)}
+
+/* ---------- table ---------- */
+.tbl-wrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th{
+  text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);
+  padding:9px 13px;border-bottom:1px solid var(--line);background:var(--surface-2);white-space:nowrap;position:sticky;top:0;
+}
+table.tbl td{padding:9px 13px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.tbl tr:last-child td{border-bottom:0}
+table.tbl tbody tr{cursor:pointer}
+table.tbl tbody tr:hover{background:var(--surface-2)}
+table.tbl tbody tr.norow{cursor:default}
+.cell-name{display:flex;align-items:center;gap:9px;min-width:0}
+.cell-name b{font-weight:600;display:block;line-height:1.25}
+.cell-name span{font-size:11px;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+.ta-r{text-align:right}
+.empty{padding:34px 16px;text-align:center;color:var(--ink-3);font-size:13px}
+
+/* ---------- filters / forms ---------- */
+.filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.chip{
+  padding:5px 11px;border-radius:5px;border:1px solid var(--line);background:var(--surface);
+  font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer;
+}
+.chip:hover{border-color:var(--ink-3);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.field input,.field select,.field textarea{padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);font-size:13px;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{background:var(--surface);border-color:var(--accent);outline:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+
+/* ---------- drawer + modal ---------- */
+.scrim{position:fixed;inset:0;background:rgba(12,9,10,.55);opacity:0;pointer-events:none;transition:opacity .18s;z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(540px,100vw);background:var(--surface);border-left:1px solid var(--line);
+  box-shadow:var(--shadow-lg);transform:translateX(101%);transition:transform .22s cubic-bezier(.3,.8,.4,1);
+  z-index:50;display:flex;flex-direction:column;
+}
+.drawer.on{transform:none}
+.drawer-head{padding:15px 17px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
+.drawer-body{overflow-y:auto;padding:17px;flex:1;display:flex;flex-direction:column;gap:17px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 17px}
+.tab{padding:9px 11px;border:0;background:none;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:.05em}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.modal{
+  position:fixed;z-index:60;top:50%;left:50%;transform:translate(-50%,-48%) scale(.98);opacity:0;pointer-events:none;
+  width:min(540px,calc(100vw - 28px));max-height:88vh;overflow-y:auto;background:var(--surface);
+  border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-lg);transition:opacity .16s,transform .16s;
+}
+.modal.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.modal-head{padding:16px 18px 0}
+.modal-body{padding:15px 18px;display:flex;flex-direction:column;gap:12px}
+.modal-foot{padding:0 18px 18px;display:flex;gap:8px;justify-content:flex-end}
+.dl{display:grid;grid-template-columns:110px 1fr;gap:7px 12px;font-size:13px}
+.dl dt{color:var(--ink-3);font-size:12px}
+.dl dd{margin:0;font-weight:500}
+.sec-title{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:9px}
+.mini{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.mini:last-child{border-bottom:0}
+
+.toasts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center}
+.toast{
+  background:var(--ink);color:var(--ground);padding:9px 15px;border-radius:6px;font-size:13px;font-weight:600;
+  box-shadow:var(--shadow-lg);animation:pop .2s ease-out;border-left:3px solid var(--accent);
+}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+
+/* ---------- board ---------- */
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(238px,1fr);gap:10px;overflow-x:auto;padding-bottom:6px;align-items:start}
+.col{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);display:flex;flex-direction:column;min-height:110px}
+.col-head{padding:9px 11px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
+.col-head b{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em}
+.col-head .n{margin-left:auto;font-size:11px;font-family:"IBM Plex Mono",monospace;color:var(--ink-3)}
+.col-body{padding:8px;display:flex;flex-direction:column;gap:7px}
+.lead{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 10px;cursor:pointer;box-shadow:var(--shadow)}
+.lead:hover{border-color:var(--ink-3)}
+.lead b{font-size:13px;font-weight:600;display:block}
+.lead .meta{font-size:11px;color:var(--ink-3);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.stage-dot{width:7px;height:7px;border-radius:2px;flex:none}
+
+/* ---------- charts ---------- */
+.bars{display:flex;align-items:flex-end;gap:4px;height:116px}
+.bar{flex:1;background:var(--data-soft);border-radius:2px 2px 0 0;position:relative;min-height:2px}
+.bar.hi{background:var(--data)}
+.bar:hover{background:var(--accent)}
+.bars-x{display:flex;gap:4px;margin-top:6px}
+.bars-x span{flex:1;text-align:center;font-size:9.5px;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+.heat{display:grid;grid-template-columns:32px repeat(16,1fr);gap:2px;align-items:center}
+.heat .hh{font-size:9px;color:var(--ink-3);text-align:center;font-family:"IBM Plex Mono",monospace}
+.heat .hd{font-size:10px;color:var(--ink-3);font-weight:700}
+.heat i{display:block;height:15px;border-radius:2px;background:var(--data);font-style:normal}
+.legend{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-3);margin-top:9px}
+.legend i{width:14px;height:10px;border-radius:2px;background:var(--data);display:block}
+.meter{height:6px;border-radius:2px;background:var(--surface-3);overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--data)}
+.meter.warn>i{background:var(--warn)} .meter.crit>i{background:var(--crit)} .meter.good>i{background:var(--good)}
+.split{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.split3{display:grid;grid-template-columns:repeat(auto-fit,minmax(296px,1fr));gap:16px;align-items:start}
+.sched{display:grid;grid-template-columns:repeat(7,minmax(154px,1fr));gap:9px;overflow-x:auto}
+.day-col{display:flex;flex-direction:column;gap:7px}
+.day-name{font-size:9.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);padding-bottom:3px;border-bottom:1px solid var(--line)}
+.day-name.today{color:var(--accent);border-bottom-color:var(--accent)}
+.klass{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--data);border-radius:6px;padding:8px 9px;cursor:pointer;box-shadow:var(--shadow)}
+.klass:hover{border-color:var(--ink-3)}
+.klass b{display:block;font-size:12.5px;font-weight:600;line-height:1.2}
+.klass .t{font-size:10.5px;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+.klass .cap{font-size:10.5px;color:var(--ink-2);margin-top:5px;display:flex;justify-content:space-between;gap:6px}
+
+/* ---------- fight-specific ---------- */
+.ring{--pct:0;width:56px;height:56px;flex:none;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--rc,var(--good)) calc(var(--pct)*1%), var(--surface-3) 0);}
+.ring i{width:44px;height:44px;border-radius:50%;background:var(--surface);display:grid;place-items:center;
+  font-style:normal;font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:18px}
+.corner-red{border-left:3px solid var(--accent)!important}
+.corner-blue{border-left:3px solid var(--data)!important}
+.belt{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.belt::before{content:"";width:16px;height:7px;border-radius:1px;background:var(--bc,#999);border:1px solid rgba(0,0,0,.25)}
+.record{font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:17px;letter-spacing:.02em}
+.wclass{display:flex;align-items:baseline;gap:6px}
+.scale{position:relative;height:22px;border-radius:3px;background:var(--surface-3);overflow:hidden}
+.scale .limit{position:absolute;top:0;bottom:0;width:2px;background:var(--ink)}
+.scale .now{position:absolute;top:0;bottom:0;left:0;background:var(--good);opacity:.35}
+.scale .now.over{background:var(--crit);opacity:.4}
+.scale b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:"IBM Plex Mono",monospace}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+@media (max-width:1080px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .rail{position:static;height:auto;flex-direction:row;flex-wrap:wrap;overflow:visible;border-right:0;border-bottom:1px solid var(--line);padding-bottom:8px;align-items:flex-start}
+  .brand{width:100%;margin-bottom:0}
+  .nav-group{padding:6px;display:flex;flex-wrap:wrap;gap:4px}
+  .nav-item{width:auto}
+  .nav-item[aria-current="page"]::before{display:none}
+  .nav-label,.creed,.rail-foot{display:none}
+  .split,.grid2{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpi-val{font-size:26px}
+  .search{width:100%;order:5}
+  .topbar{height:auto;padding:11px 15px;flex-wrap:wrap}
+  .view{padding:15px}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 36 36" role="img" aria-label="Fit and Fight Club">
+        <rect width="36" height="36" rx="5" fill="var(--ink)"></rect>
+        <path d="M0 0h13L0 13Z" fill="#C81E28"></path>
+        <path d="M36 36H23L36 23Z" fill="#2A5FB8"></path>
+        <text x="18" y="25" text-anchor="middle" fill="var(--surface)" font-family="'Big Shoulders Display',sans-serif" font-weight="800" font-size="20">FF</text>
+      </svg>
+      <div>
+        <div class="brand-name">Fit and<br>Fight Club</div>
+        <div class="brand-sub">Member CRM</div>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="creed">Be stronger, harder,<br>faster, better today<br>than yesterday
+      <span>Est. 2011 · Navi Mumbai &amp; Pune</span></div>
+    <div class="rail-foot">
+      <div id="clock" class="num">&mdash;</div>
+      <div style="margin-top:8px;display:flex;gap:6px">
+        <button class="btn btn-sm btn-ghost" id="themeBtn">Theme</button>
+        <button class="btn btn-sm btn-ghost" id="resetBtn" title="Restore the seeded demo data">Reset data</button>
+      </div>
+    </div>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <div>
+        <div class="page-title" id="ptitle">Dashboard</div>
+        <div class="page-sub" id="psub"></div>
+      </div>
+      <div class="branch-pick" id="branchPick"></div>
+      <div class="search" style="margin-left:auto">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <input id="gsearch" type="search" placeholder="Search members, leads, invoices..." autocomplete="off">
+        <div id="gpop"></div>
+      </div>
+      <button class="btn" id="checkinBtn">Check in</button>
+      <button class="btn btn-primary" id="newBtn">New member</button>
+    </header>
+    <main class="view" id="view"></main>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Record detail"></aside>
+<div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   FIT AND FIGHT CLUB — member CRM
+   Three centres: Vashi, Nerul (Navi Mumbai) and Wagholi (Pune).
+   Single file, no backend. State is in memory with a guarded
+   localStorage mirror so edits survive a reload.
+   All member data below is generated demo data.
+   ============================================================ */
+
+const $  = (s,r=document)=>r.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const DAY = 864e5;
+const TODAY = (()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
+const iso  = d => new Date(d).toISOString().slice(0,10);
+const days = (a,b) => Math.round((new Date(a)-new Date(b))/DAY);
+const addD = (d,n) => new Date(new Date(d).getTime()+n*DAY);
+const fmtD = d => new Date(d).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+const fmtDs= d => new Date(d).toLocaleDateString("en-IN",{day:"2-digit",month:"short"});
+const money= n => "₹" + Math.round(n).toLocaleString("en-IN");
+const initials = n => n.split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+
+let _s = 20260821;
+const rnd  = () => (_s = (_s*1664525+1013904223)%4294967296)/4294967296;
+const pick = a => a[Math.floor(rnd()*a.length)];
+const int  = (a,b) => a + Math.floor(rnd()*(b-a+1));
+const chance = p => rnd() < p;
+
+/* ---------------- the club ---------------- */
+const BRANCHES = [
+  {id:"VSH", name:"Vashi",   city:"Navi Mumbai", area:"Sector 30, Vashi",   manager:"Sumit",        phone:"98217 94867", opened:2011},
+  {id:"NRL", name:"Nerul",   city:"Navi Mumbai", area:"Nerul East",          manager:"Rahul Khadpe", phone:"93217 86341", opened:2016},
+  {id:"WGH", name:"Wagholi", city:"Pune",        area:"Wagholi",             manager:"Jayesh",       phone:"91379 13036", opened:2021},
+];
+const branchById = id => BRANCHES.find(b=>b.id===id) || BRANCHES[0];
+
+const PLANS = [
+  {id:"FIT-M", name:"Fitness Monthly",        months:1,  price:2000,  track:"fitness"},
+  {id:"FIT-Q", name:"Fitness Quarterly",      months:3,  price:5000,  track:"fitness"},
+  {id:"FIT-Y", name:"Fitness Annual",         months:12, price:15000, track:"fitness"},
+  {id:"WAR-M", name:"Warrior Conditioning",   months:1,  price:2200,  track:"fitness"},
+  {id:"CF-M",  name:"CrossFit Monthly",       months:1,  price:3000,  track:"fitness"},
+  {id:"MMA-M", name:"MMA Basic Monthly",      months:1,  price:2500,  track:"fight"},
+  {id:"MMA-Q", name:"MMA Basic Quarterly",    months:3,  price:6500,  track:"fight"},
+  {id:"PRO-Q", name:"MMA Pro Quarterly",      months:3,  price:9000,  track:"fight"},
+  {id:"ALL-Y", name:"All-Access Annual",      months:12, price:24000, track:"fight"},
+];
+const planById = id => PLANS.find(p=>p.id===id) || PLANS[0];
+
+const DISCIPLINES = [
+  {id:"BOX", name:"Boxing",              short:"Boxing",   fight:true},
+  {id:"KBX", name:"Kick Boxing",         short:"Kickbox",  fight:true},
+  {id:"MTH", name:"Muay Thai",           short:"Muay Thai",fight:true},
+  {id:"WRS", name:"Wrestling",           short:"Wrestling",fight:true},
+  {id:"BJJ", name:"Brazilian Jiu Jitsu", short:"BJJ",      fight:true},
+  {id:"WAR", name:"Warrior Conditioning",short:"Warrior",  fight:false},
+  {id:"CRF", name:"CrossFit",            short:"CrossFit", fight:false},
+  {id:"WGT", name:"Weight Training",     short:"Weights",  fight:false},
+];
+const discById = id => DISCIPLINES.find(d=>d.id===id) || DISCIPLINES[0];
+
+const LEVELS = ["Beginner","Intermediate","Advanced","Professional"];
+const BELTS = [
+  {name:"White",  color:"#F2EFEA"}, {name:"Blue",   color:"#1F5FBF"},
+  {name:"Purple", color:"#6C3FA8"}, {name:"Brown",  color:"#6B4526"},
+  {name:"Black",  color:"#161314"},
+];
+const WEIGHT_CLASSES = [
+  {name:"Flyweight",         limit:56.7}, {name:"Bantamweight",     limit:61.2},
+  {name:"Featherweight",     limit:65.8}, {name:"Lightweight",      limit:70.3},
+  {name:"Welterweight",      limit:77.1}, {name:"Middleweight",     limit:83.9},
+  {name:"Light Heavyweight", limit:93.0}, {name:"Heavyweight",      limit:120.2},
+];
+const classFor = kg => WEIGHT_CLASSES.find(w=>kg<=w.limit) || WEIGHT_CLASSES[WEIGHT_CLASSES.length-1];
+
+/* Coaching staff. Founder and centre managers are the club's real
+   staff listed publicly; the remaining coaches are demo entries. */
+const COACHES = [
+  {id:"CH1", name:"Sanjivan Padwal", role:"Founder & Head Coach", branchId:"VSH", disc:["WRS","MTH","BOX"], rate:1200, since:2011, phone:"99302 24405"},
+  {id:"CH2", name:"Rahul Khadpe",    role:"Centre Manager · Boxing", branchId:"NRL", disc:["BOX","KBX"], rate:900, since:2016, phone:"93217 86341"},
+  {id:"CH3", name:"Sumit",           role:"Centre Manager · Muay Thai", branchId:"VSH", disc:["MTH","KBX"], rate:900, since:2014, phone:"98217 94867"},
+  {id:"CH4", name:"Jayesh",          role:"Centre Manager · Conditioning", branchId:"WGH", disc:["WAR","CRF"], rate:900, since:2021, phone:"91379 13036"},
+  {id:"CH5", name:"Aditya Raut",     role:"BJJ Coach",           branchId:"NRL", disc:["BJJ","WRS"], rate:1000, since:2018, phone:"98190 22110"},
+  {id:"CH6", name:"Faiz Ansari",     role:"Kickboxing Coach",    branchId:"VSH", disc:["KBX","BOX"], rate:850,  since:2019, phone:"98190 33221"},
+  {id:"CH7", name:"Sneha Kulkarni",  role:"CrossFit & Warrior",  branchId:"WGH", disc:["CRF","WAR"], rate:850,  since:2021, phone:"98190 44332"},
+  {id:"CH8", name:"Vikrant More",    role:"Strength Coach",      branchId:"NRL", disc:["WGT","WAR"], rate:800,  since:2022, phone:"98190 55443"},
+  {id:"CH9", name:"Prathamesh Salunkhe", role:"Boxing Coach",    branchId:"WGH", disc:["BOX","KBX"], rate:850,  since:2022, phone:"98190 66554"},
+  {id:"CH10",name:"Rutuja Pawar",    role:"Wrestling & BJJ Coach", branchId:"WGH", disc:["WRS","BJJ"], rate:900, since:2023, phone:"98190 77665"},
+];
+const coachById = id => COACHES.find(c=>c.id===id);
+
+const SOURCES = ["Walk-in","Instagram","Website trial form","Google Search","Referral","Meta Ads","Justdial","Corporate tie-up"];
+const STAGES = [
+  {id:"new",       name:"New enquiry",   color:"var(--ink-3)"},
+  {id:"contacted", name:"Contacted",     color:"#8A7F80"},
+  {id:"trial",     name:"Trial booked",  color:"var(--warn)"},
+  {id:"trialdone", name:"Trial attended",color:"var(--data)"},
+  {id:"negotiate", name:"Negotiating",   color:"var(--accent)"},
+  {id:"won",       name:"Joined",        color:"var(--good)"},
+  {id:"lost",      name:"Lost",          color:"var(--ink-3)"},
+];
+const stageById = id => STAGES.find(s=>s.id===id) || STAGES[0];
+const OPEN_STAGES = ["new","contacted","trial","trialdone","negotiate"];
+
+const FIRST = ["Aarav","Vivaan","Aditya","Rohit","Ishaan","Kabir","Manav","Nikhil","Siddharth","Yash","Ananya","Diya","Saanvi","Meera","Kavya","Riya","Tanvi","Aditi","Sneha","Pooja","Rahul","Karan","Farhan","Imran","Joseph","Deepak","Sameer","Varun","Anjali","Shreya","Nandini","Rakesh","Suresh","Lakshmi","Divya","Harsha","Gaurav","Ritika","Naveen","Preeti","Zoya","Aman","Ishita","Vishal","Mitali","Omkar","Prathamesh","Shweta","Tejas","Rutuja","Sagar","Mrunal","Chinmay","Snehal"];
+const LAST  = ["Sharma","Reddy","Nair","Iyer","Menon","Patel","Gowda","Kulkarni","Bhat","Rao","Verma","Kapoor","Joshi","Pillai","Shetty","Desai","Chatterjee","Bose","Mehta","Singh","Khan","Fernandes","Prasad","Naidu","Hegde","Jadhav","Deshmukh","Sawant","Bhosale","Salunkhe","Gaikwad","Chavan","Pawar","Kadam"];
+const newName = () => pick(FIRST)+" "+pick(LAST);
+const newPhone = () => "9"+int(1,8)+int(100,999)+" "+int(10000,99999);
+const GOALS = ["Fat loss","Muscle gain","General fitness","Fight preparation","Self defence","Strength","Endurance","Stress relief"];
+
+/* class timetable per branch */
+const TIMETABLE = [
+  {name:"Boxing",              disc:"BOX", level:"Beginner",     time:"06:30", dur:60, cap:18, room:"Ring",     days:[1,3,5]},
+  {name:"Boxing Pro",          disc:"BOX", level:"Professional", time:"19:30", dur:75, cap:12, room:"Ring",     days:[2,4]},
+  {name:"Kick Boxing",         disc:"KBX", level:"Intermediate", time:"18:00", dur:60, cap:20, room:"Mat A",    days:[1,3,5]},
+  {name:"Muay Thai",           disc:"MTH", level:"Intermediate", time:"07:30", dur:60, cap:18, room:"Mat A",    days:[2,4,6]},
+  {name:"Muay Thai Pro",       disc:"MTH", level:"Professional", time:"20:00", dur:75, cap:10, room:"Ring",     days:[1,4]},
+  {name:"Wrestling",           disc:"WRS", level:"Intermediate", time:"19:00", dur:60, cap:14, room:"Mat B",    days:[2,5]},
+  {name:"Brazilian Jiu Jitsu", disc:"BJJ", level:"Beginner",     time:"08:30", dur:60, cap:16, room:"Mat B",    days:[0,3,6]},
+  {name:"BJJ Advanced",        disc:"BJJ", level:"Advanced",     time:"20:00", dur:75, cap:12, room:"Mat B",    days:[2,5]},
+  {name:"Warrior Conditioning",disc:"WAR", level:"Beginner",     time:"06:00", dur:45, cap:24, room:"Turf",     days:[1,2,3,4,5]},
+  {name:"CrossFit WOD",        disc:"CRF", level:"Intermediate", time:"18:30", dur:60, cap:20, room:"Box",      days:[1,3,5]},
+  {name:"Open Sparring",       disc:"BOX", level:"Advanced",     time:"18:00", dur:90, cap:20, room:"Ring",     days:[6]},
+];
+const DAYNAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+/* ---------------- state ---------------- */
+let S = null;
+
+function seed(){
+  _s = 20260821;
+  const members=[], checkins=[], invoices=[], pt=[], leads=[], classes=[], spars=[];
+  let mSeq=1000, iSeq=7000, lSeq=3000;
+
+  const SIZE = {VSH:62, NRL:54, WGH:38};
+  BRANCHES.forEach(br=>{
+    const branchCoaches = COACHES.filter(c=>c.branchId===br.id);
+    for(let i=0;i<SIZE[br.id];i++){
+      const name = newName();
+      const plan = pick(PLANS.concat([PLANS[0],PLANS[1],PLANS[5],PLANS[6]]));
+      const joined = addD(TODAY, -int(4, br.id==="WGH"?600:900));
+      let start = new Date(joined), cyc = 1;
+      while(days(TODAY,start) > plan.months*30){ start = addD(start, plan.months*30); cyc++; }
+      if(cyc>1 && chance(.17)){ start = addD(start, -plan.months*30); cyc--; }
+      const end = addD(start, plan.months*30);
+      const id = "FF-"+(++mSeq);
+
+      const isFighter = plan.track==="fight" && chance(.72);
+      const disc = [];
+      if(isFighter){
+        const pool = DISCIPLINES.filter(d=>d.fight).map(d=>d.id);
+        const n = int(1,3);
+        while(disc.length<n){ const d=pick(pool); if(!disc.includes(d)) disc.push(d); }
+        if(chance(.5) && !disc.includes("WGT")) disc.push("WGT");
+      } else {
+        const pool = ["WAR","CRF","WGT"];
+        const n = int(1,2);
+        while(disc.length<n){ const d=pick(pool); if(!disc.includes(d)) disc.push(d); }
+        if(plan.track==="fight") disc.unshift(pick(["BOX","KBX","MTH"]));
+      }
+      const months = Math.floor(days(TODAY,joined)/30);
+      const level = isFighter
+        ? (months>17 ? pick(["Advanced","Professional","Professional"]) : months>9 ? pick(["Intermediate","Advanced"]) : months>4 ? "Intermediate" : "Beginner")
+        : (months>14 ? "Intermediate" : "Beginner");
+      const gender = chance(.34) ? "F" : "M";
+      const weight = Math.round((gender==="F" ? 48+rnd()*28 : 58+rnd()*38)*10)/10;
+
+      const m = {
+        id, branchId:br.id, name, phone:newPhone(),
+        email:name.toLowerCase().replace(/[^a-z]/g,".")+"@mail.com",
+        gender, age:int(16,52), weight,
+        planId:plan.id, joined:iso(joined), start:iso(start), end:iso(end),
+        frozen:chance(.045), cancelled:false,
+        source:pick(SOURCES), goal: isFighter ? pick(["Fight preparation","Self defence","Strength","Fat loss"]) : pick(GOALS),
+        track: isFighter ? "fight" : "fitness",
+        disciplines: disc, level,
+        belt: disc.includes("BJJ") ? BELTS[clamp(Math.floor(months/16),0,4)].name : null,
+        coachId: (isFighter || chance(.3)) && branchCoaches.length ? pick(branchCoaches).id : null,
+        record: isFighter && level!=="Beginner" ? {w:int(0,9), l:int(0,5), d:int(0,1)} : null,
+        nextBout: isFighter && ["Advanced","Professional"].includes(level) && chance(.4) ? iso(addD(TODAY,int(9,95))) : null,
+        notes:"", emergency:newName()+" · "+newPhone(),
+      };
+      /* Competition class is declared, not derived: plenty of fighters
+         book a division below their walking weight and cut into it. */
+      const natural = WEIGHT_CLASSES.indexOf(classFor(m.weight));
+      m.weightClass = WEIGHT_CLASSES[isFighter && natural>0 && chance(.45) ? natural-1 : natural].name;
+      members.push(m);
+
+      /* attendance */
+      const habit = rnd();
+      const perWeek = habit<.10 ? 0 : habit<.26 ? 1 : habit<.55 ? 3 : habit<.84 ? 4 : 6;
+      const span = Math.min(90, Math.max(1, days(TODAY, joined)));
+      for(let d=span; d>=0; d--){
+        const day = addD(TODAY,-d);
+        if(day > new Date(m.end)) continue;
+        if(m.frozen && d < 30) continue;
+        if(rnd() > perWeek/7) continue;
+        const hh = chance(.5) ? int(6,10) : int(17,21);
+        checkins.push({memberId:id, branchId:br.id, ts:new Date(addD(TODAY,-d).getTime()+hh*36e5+int(0,59)*6e4).toISOString()});
+      }
+      /* sparring log — fighters only */
+      if(isFighter && level!=="Beginner"){
+        for(let d=90; d>=0; d--){
+          if(!chance(perWeek>=4 ? .09 : .04)) continue;
+          spars.push({memberId:id, branchId:br.id, ts:iso(addD(TODAY,-d)), rounds:int(3,8),
+                      partner: pick(["drill","live","technical"])});
+        }
+      }
+      /* invoices, one per billing cycle */
+      for(let c=Math.min(cyc,14)-1;c>=0;c--){
+        const issued = addD(start, -c*plan.months*30);
+        if(issued > TODAY) continue;
+        const roll = rnd(), isCur = c===0;
+        let status = !isCur ? "paid" : roll<.71 ? "paid" : roll<.83 ? "partial" : "due";
+        const paidAmt = status==="paid" ? plan.price : status==="partial" ? Math.round(plan.price*pick([.3,.4,.5,.6])/100)*100 : 0;
+        const due = addD(issued,7);
+        if(status==="due" && due < TODAY) status = "overdue";
+        invoices.push({id:"INV-"+(++iSeq), memberId:id, branchId:br.id, date:iso(issued), due:iso(due),
+          item:plan.name, amount:plan.price, paid:paidAmt, status,
+          method: paidAmt ? pick(["UPI","Card","Cash","Bank transfer"]) : null});
+      }
+      /* personal training packages */
+      if(m.coachId && chance(.3)){
+        const total = pick([8,12,16,24]);
+        pt.push({memberId:id, branchId:br.id, coachId:m.coachId, total, used:int(0,total),
+                 start:iso(addD(TODAY,-int(5,120))), expiry:iso(addD(TODAY,int(-10,150))),
+                 price: total*coachById(m.coachId).rate});
+      }
+    }
+
+    /* leads per branch */
+    const mix = ["new","new","contacted","contacted","contacted","trial","trial","trialdone","trialdone",
+                 "negotiate","won","won","won","lost","lost"];
+    for(let i=0;i<(br.id==="WGH"?14:20);i++){
+      const created = addD(TODAY,-int(0,42));
+      const stage = pick(mix);
+      const interest = pick(PLANS);
+      const trialSet = ["trial","trialdone","negotiate","won"].includes(stage);
+      leads.push({
+        id:"LD-"+(++lSeq), branchId:br.id, name:newName(), phone:newPhone(),
+        source:pick(SOURCES), stage, owner:br.manager, created:iso(created),
+        followUp: iso(addD(TODAY, OPEN_STAGES.includes(stage) ? int(-5,9) : int(3,20))),
+        interest:interest.id, value:interest.price,
+        // a booked trial is still ahead of them; an attended one is behind
+        trialDate: stage==="trial" ? iso(addD(TODAY, int(0,7)))
+                 : trialSet ? iso(addD(created, int(1,6))) : null,
+        trialAttended: ["trialdone","negotiate","won"].includes(stage),
+        wants: pick(DISCIPLINES).id,
+        log:[{ts:iso(created), text:"Enquiry captured · "+"src"}],
+      });
+    }
+
+    /* timetable per branch */
+    TIMETABLE.forEach((t,ti)=>{
+      if(br.id==="WGH" && ["Boxing Pro","Muay Thai Pro","BJJ Advanced"].includes(t.name)) return;
+      // spread the timetable across whoever at this centre can teach it
+      const pool = branchCoaches.filter(c=>c.disc.includes(t.disc));
+      const bag = pool.length ? pool : branchCoaches;
+      const coach = bag[ti % bag.length];
+      t.days.forEach(d=>classes.push({
+        id:"CL-"+br.id+"-"+ti+"-"+d, branchId:br.id, name:t.name, disc:t.disc, level:t.level,
+        coachId:coach.id, dow:d, time:t.time, dur:t.dur, cap:t.cap, room:t.room, booked:[], waitlist:[],
+      }));
+    });
+  });
+
+  leads.forEach(l=>{ l.log[0].text = "Enquiry captured · "+l.source; });
+
+  /* fill class rosters from each branch's own active members */
+  classes.forEach(c=>{
+    const pool = members.filter(m=>m.branchId===c.branchId && new Date(m.end)>=TODAY && !m.cancelled
+                   && (m.disciplines.includes(c.disc) || !DISCIPLINES.find(d=>d.id===c.disc).fight));
+    if(!pool.length) return;
+    const target = Math.min(c.cap+4, Math.round(c.cap*(0.5+rnd()*0.75)));
+    const seen = new Set(); let guard=0;
+    while(seen.size < target && guard++ < target*14){
+      const m = pick(pool); if(!m || seen.has(m.id)) continue; seen.add(m.id);
+      (c.booked.length < c.cap ? c.booked : c.waitlist).push(m.id);
+    }
+  });
+
+  return {members, checkins, invoices, pt, leads, classes, spars, seq:{m:mSeq,i:iSeq,l:lSeq}};
+}
+/* ---------------- derived helpers ---------------- */
+const UI = {branch:"ALL", mFilter:"all", mSort:"name", mQuery:"", cQuery:"", bFilter:"all",
+            fSort:"readiness", fFilter:"all", tab:"overview", tabId:null};
+
+const inB   = x => UI.branch==="ALL" || x.branchId===UI.branch;
+const B     = arr => UI.branch==="ALL" ? arr : arr.filter(x=>x.branchId===UI.branch);
+const bLabel= () => UI.branch==="ALL" ? "All three centres" : branchById(UI.branch).name+" · "+branchById(UI.branch).city;
+
+function statusOf(m){
+  if(m.cancelled) return {key:"cancelled", label:"Cancelled", cls:"pill"};
+  if(m.frozen)    return {key:"frozen",    label:"Frozen",    cls:"pill pill-data"};
+  const left = days(m.end, TODAY);
+  if(left < 0)   return {key:"expired",  label:"Expired",   cls:"pill pill-crit dot", left};
+  if(left <= 14) return {key:"expiring", label:left+"d left", cls:"pill pill-warn dot", left};
+  return {key:"active", label:"Active", cls:"pill pill-good dot", left};
+}
+const memberById = id => S.members.find(m=>m.id===id);
+const lastVisit  = id => { let t=null; for(const c of S.checkins) if(c.memberId===id && (!t||c.ts>t)) t=c.ts; return t; };
+const visitsSince= (id,n) => S.checkins.filter(c=>c.memberId===id && days(TODAY,c.ts)<=n).length;
+const duesOf     = id => S.invoices.filter(i=>i.memberId===id && i.status!=="paid").reduce((s,i)=>s+(i.amount-i.paid),0);
+const isToday    = ts => iso(ts)===iso(TODAY);
+const checkedInToday = id => S.checkins.some(c=>c.memberId===id && isToday(c.ts));
+const sparsOf    = id => S.spars.filter(s=>s.memberId===id);
+const roundsSince= (id,n) => sparsOf(id).filter(s=>days(TODAY,s.ts)<=n).reduce((t,s)=>t+s.rounds,0);
+const lastSpar   = id => { const a=sparsOf(id).map(s=>s.ts).sort(); return a.length?a[a.length-1]:null; };
+const activeMembers = () => B(S.members).filter(m=>!m.cancelled && new Date(m.end)>=TODAY);
+const fighters = () => B(S.members).filter(m=>m.track==="fight" && !m.cancelled && new Date(m.end)>=TODAY);
+
+function atRisk(m){
+  const k = statusOf(m).key;
+  if(k==="expired"||k==="cancelled"||k==="frozen") return 0;
+  const lv = lastVisit(m.id);
+  return lv ? days(TODAY,lv) : days(TODAY,m.start);
+}
+
+/* Fight readiness — four things a corner actually cares about:
+   mat time, sparring volume, how close to weight, and how fresh
+   the last hard round was. Scored out of 100. */
+function readiness(m){
+  const v30 = visitsSince(m.id,30);
+  const r30 = roundsSince(m.id,30);
+  const ls  = lastSpar(m.id);
+  const limit = (WEIGHT_CLASSES.find(w=>w.name===m.weightClass)||WEIGHT_CLASSES[0]).limit;
+  const over  = Math.max(0, m.weight - limit);
+  const parts = {
+    mat:    Math.round(clamp(v30/12,0,1)*35),
+    spar:   Math.round(clamp(r30/24,0,1)*30),
+    weight: Math.round(clamp(1 - over/5, 0, 1)*20),
+    fresh:  ls ? Math.round(clamp(1 - days(TODAY,ls)/28, 0, 1)*15) : 0,
+  };
+  const total = parts.mat+parts.spar+parts.weight+parts.fresh;
+  return {total, parts, v30, r30, ls, over, limit,
+          band: total>=75 ? "good" : total>=50 ? "warn" : "crit",
+          verdict: total>=75 ? "Camp ready" : total>=50 ? "Needs a block" : "Off the pace"};
+}
+
+/* ---------------- persistence ---------------- */
+const KEY = "fnf-crm-v1";
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const r=localStorage.getItem(KEY); if(r){ const p=JSON.parse(r); if(p&&p.members&&p.spars) return p; } }catch(e){} return null; }
+S = load() || seed();
+
+/* ---------------- chrome ---------------- */
+const ROUTES = [
+  {group:"Front desk", items:[{id:"dashboard",name:"Dashboard",icon:"grid"},{id:"checkin",name:"Check-in",icon:"scan"}]},
+  {group:"Sales",      items:[{id:"leads",name:"Leads & trials",icon:"funnel"}]},
+  {group:"Membership", items:[{id:"members",name:"Members",icon:"users"},{id:"billing",name:"Billing",icon:"rupee"}]},
+  {group:"The floor",  items:[{id:"fighters",name:"Fight squad",icon:"glove"},{id:"classes",name:"Timetable",icon:"calendar"},{id:"coaches",name:"Coaches",icon:"whistle"}]},
+];
+const ICONS = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  scan:'<path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M7 12h10"/>',
+  funnel:'<path d="M3 4h18l-7 8v7l-4 2v-9z"/>',
+  users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.2 2.7-5.2 6-5.2s6 2 6 5.2"/><path d="M16.5 5.4a3.2 3.2 0 0 1 0 5.9M17.5 14.4c2.3.5 3.5 2.3 3.5 4.6"/>',
+  rupee:'<circle cx="12" cy="12" r="9"/><path d="M9 8h6M9 11h6M13.5 8c1.5 0 2 1.2 2 2s-.6 2.6-3 2.6H9l4 4"/>',
+  glove:'<path d="M7 11V6.5a2 2 0 0 1 4 0V10M11 10V5.5a2 2 0 0 1 4 0V10M15 10V7.5a2 2 0 0 1 4 0V14a6 6 0 0 1-6 6h-2a6 6 0 0 1-6-6v-2.5a1.8 1.8 0 0 1 3.6 0"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>',
+  whistle:'<circle cx="9" cy="13" r="5"/><path d="M14 11h7l-2 3h-5M9 8V5h5"/>',
+};
+const icon = n => '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[n]||"")+'</svg>';
+
+let route = "dashboard";
+const badges = () => ({
+  leads:    B(S.leads).filter(l=>OPEN_STAGES.includes(l.stage)).length,
+  members:  activeMembers().length,
+  fighters: fighters().length,
+  billing:  B(S.invoices).filter(i=>i.status==="overdue").length || "",
+  checkin:  B(S.checkins).filter(c=>isToday(c.ts)).length,
+});
+function renderNav(){
+  const b = badges();
+  $("#nav").innerHTML = ROUTES.map(g=>`
+    <div class="nav-group">
+      <div class="nav-label">${g.group}</div>
+      ${g.items.map(it=>`<button class="nav-item" data-go="${it.id}" ${route===it.id?'aria-current="page"':""}>
+        ${icon(it.icon)}<span>${it.name}</span>
+        ${b[it.id]!==undefined&&b[it.id]!==""?`<span class="nav-count">${b[it.id]}</span>`:""}</button>`).join("")}
+    </div>`).join("");
+}
+function renderBranches(){
+  $("#branchPick").innerHTML = [{id:"ALL",name:"All centres"}].concat(BRANCHES)
+    .map(b=>`<button data-branch="${b.id}" aria-pressed="${UI.branch===b.id}">${b.name}</button>`).join("");
+}
+const TITLES = {
+  dashboard:["Dashboard","What is happening across the club today"],
+  checkin:  ["Check-in","Front desk console and attendance history"],
+  leads:    ["Leads & trials","Enquiries, free trials and follow-ups"],
+  members:  ["Members","Roster, memberships and renewals"],
+  fighters: ["Fight squad","Weight, sparring volume and camp readiness"],
+  billing:  ["Billing","Invoices, payments and outstanding dues"],
+  classes:  ["Timetable","Weekly schedule, bookings and waitlists"],
+  coaches:  ["Coaches","Roster, personal-training load and payouts"],
+};
+function go(r){ route=r; render(); window.scrollTo({top:0}); }
+function render(){
+  const [t,s] = TITLES[route];
+  $("#ptitle").textContent = t;
+  $("#psub").textContent = s + " · " + bLabel();
+  renderNav(); renderBranches();
+  $("#view").innerHTML = ({dashboard:viewDashboard, checkin:viewCheckin, leads:viewLeads, members:viewMembers,
+    fighters:viewFighters, billing:viewBilling, classes:viewClasses, coaches:viewCoaches})[route]();
+  save();
+}
+
+/* ---------------- overlays ---------------- */
+function toast(msg){
+  const el=document.createElement("div"); el.className="toast"; el.textContent=msg;
+  $("#toasts").appendChild(el); setTimeout(()=>el.remove(), 2700);
+}
+function closeOverlays(){ $("#drawer").classList.remove("on"); $("#modal").classList.remove("on"); $("#scrim").classList.remove("on"); }
+function openModal(h){ $("#modal").innerHTML=h; $("#modal").classList.add("on"); $("#scrim").classList.add("on");
+  const f=$("#modal input,#modal select"); if(f) f.focus(); }
+function openDrawer(h){ $("#drawer").innerHTML=h; $("#drawer").classList.add("on"); $("#scrim").classList.add("on"); }
+
+/* ---------------- view helpers ---------------- */
+const bar = (v,max,cls) => `<div class="meter ${cls||""}"><i style="width:${max?clamp(v/max*100,0,100):0}%"></i></div>`;
+function kpi(label, value, foot, stripe){
+  return `<div class="kpi" style="--stripe:${stripe||"var(--line-strong)"}"><span class="eyebrow">${label}</span>
+    <div class="kpi-val">${value}</div><div class="kpi-foot">${foot||""}</div></div>`;
+}
+function memberCell(m, showBranch){
+  return `<div class="cell-name"><div class="avatar${m.track==="fight"?" fighter":""}">${initials(m.name)}</div>
+    <div><b>${esc(m.name)}</b><span>${m.id}${showBranch&&UI.branch==="ALL"?" · "+branchById(m.branchId).name:""}</span></div></div>`;
+}
+const discTags = ds => ds.map(d=>`<span class="tag">${esc(discById(d).short)}</span>`).join(" ");
+const emptyRow = (c,m) => `<tr class="norow"><td colspan="${c}"><div class="empty">${m}</div></td></tr>`;
+function ring(pct, band){
+  return `<div class="ring" style="--pct:${pct};--rc:var(--${band})"><i>${pct}</i></div>`;
+}
+const beltChip = b => { const bt=BELTS.find(x=>x.name===b); return bt?`<span class="belt" style="--bc:${bt.color}">${bt.name} belt</span>`:""; };
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function viewDashboard(){
+  const act = activeMembers();
+  const mStart = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+  const pStart = new Date(TODAY.getFullYear(), TODAY.getMonth()-1, 1);
+  const pSame  = new Date(TODAY.getFullYear(), TODAY.getMonth()-1, TODAY.getDate()+1);
+  const inMTD  = d => new Date(d)>=mStart;
+  const inPrev = d => { const x=new Date(d); return x>=pStart && x<pSame; };
+  const mem = B(S.members), inv = B(S.invoices), chk = B(S.checkins), lds = B(S.leads);
+
+  const joinsMTD = mem.filter(m=>inMTD(m.joined)).length;
+  const joinsPrev= mem.filter(m=>inPrev(m.joined)).length;
+  const revMTD   = inv.filter(i=>inMTD(i.date)).reduce((s,i)=>s+i.paid,0);
+  const revPrev  = inv.filter(i=>inPrev(i.date)).reduce((s,i)=>s+i.paid,0);
+  const dues     = inv.filter(i=>i.status!=="paid").reduce((s,i)=>s+(i.amount-i.paid),0);
+  const dueCnt   = inv.filter(i=>i.status!=="paid").length;
+  const todayIn  = chk.filter(c=>isToday(c.ts)).length;
+  const risk     = act.filter(m=>atRisk(m)>=14);
+  const expiring = act.filter(m=>{const l=days(m.end,TODAY);return l>=0&&l<=30;}).sort((a,b)=>new Date(a.end)-new Date(b.end));
+  const fSquad   = fighters();
+  const camp     = fSquad.map(m=>({m, r:readiness(m)}));
+  const ready    = camp.filter(x=>x.r.total>=75).length;
+  const bouts    = fSquad.filter(m=>m.nextBout).sort((a,b)=>new Date(a.nextBout)-new Date(b.nextBout));
+  const trials   = lds.filter(l=>l.stage==="trial");
+  const dueFollow= lds.filter(l=>OPEN_STAGES.includes(l.stage) && days(TODAY,l.followUp)>=0);
+  const delta = (a,b)=> b ? `<span class="delta ${a>=b?"up":"down"}">${a>=b?"▲":"▼"} ${Math.abs(Math.round((a-b)/b*100))}%</span>` : "";
+
+  const trend=[]; for(let d=13;d>=0;d--){const day=addD(TODAY,-d);trend.push({d:day,n:chk.filter(c=>iso(c.ts)===iso(day)).length});}
+  const tmax = Math.max(...trend.map(t=>t.n),1);
+  const todayClasses = B(S.classes).filter(c=>c.dow===TODAY.getDay()).sort((a,b)=>a.time.localeCompare(b.time));
+
+  // branch scoreboard, only worth showing when looking at everything
+  const scoreboard = UI.branch!=="ALL" ? "" : `
+    <div class="card">
+      <div class="card-head"><h3>Centre scoreboard</h3><span class="hint">this month so far</span></div>
+      <div class="card-body tight"><div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Centre</th><th>Manager</th><th>Active</th><th>Joined MTD</th><th>Checked in today</th>
+          <th>Fight squad</th><th class="ta-r">Collected MTD</th><th class="ta-r">Outstanding</th></tr></thead>
+        <tbody>${BRANCHES.map(br=>{
+          const bm = S.members.filter(m=>m.branchId===br.id && !m.cancelled && new Date(m.end)>=TODAY);
+          const bi = S.invoices.filter(i=>i.branchId===br.id);
+          return `<tr data-branch="${br.id}">
+            <td><b style="font-weight:600">${br.name}</b><div class="muted" style="font-size:11px">${esc(br.area)}</div></td>
+            <td class="muted">${esc(br.manager)}</td>
+            <td class="num">${bm.length}</td>
+            <td class="num">${S.members.filter(m=>m.branchId===br.id&&inMTD(m.joined)).length}</td>
+            <td class="num">${S.checkins.filter(c=>c.branchId===br.id&&isToday(c.ts)).length}</td>
+            <td class="num">${bm.filter(m=>m.track==="fight").length}</td>
+            <td class="ta-r num">${money(bi.filter(i=>inMTD(i.date)).reduce((s,i)=>s+i.paid,0))}</td>
+            <td class="ta-r num" style="color:var(--crit)">${money(bi.filter(i=>i.status!=="paid").reduce((s,i)=>s+(i.amount-i.paid),0))}</td>
+          </tr>`;}).join("")}</tbody>
+      </table></div></div>
+    </div>`;
+
+  return `<div class="stack">
+    <div class="kpis">
+      ${kpi("Active members", act.length, `${joinsMTD} joined this month ${delta(joinsMTD,joinsPrev)}`, "var(--accent)")}
+      ${kpi("Checked in today", todayIn, `${act.length?Math.round(todayIn/act.length*100):0}% of the roster`, "var(--data)")}
+      ${kpi("Collected this month", money(revMTD), `${money(revPrev)} by this day last month ${delta(revMTD,revPrev)}`, "var(--good)")}
+      ${kpi("Outstanding dues", money(dues), `${dueCnt} unsettled invoice${dueCnt===1?"":"s"}`, "var(--crit)")}
+      ${kpi("Renewals in 30 days", expiring.length, `${money(expiring.reduce((s,m)=>s+planById(m.planId).price,0))} at stake`, "var(--warn)")}
+      ${kpi("Camp ready", ready+" / "+fSquad.length, "fighters scoring 75+", "var(--accent)")}
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <div class="card-head"><h3>Footfall, last 14 days</h3><span class="spacer"></span>
+          <span class="hint">peak ${tmax} · avg ${Math.round(trend.reduce((s,t)=>s+t.n,0)/14)}/day</span></div>
+        <div class="card-body">
+          <div class="bars">${trend.map(t=>`<div class="bar ${t.n===tmax?"hi":""}" style="height:${Math.max(2,t.n/tmax*100)}%" title="${fmtD(t.d)} · ${t.n} check-ins"></div>`).join("")}</div>
+          <div class="bars-x">${trend.map(t=>`<span>${t.d.getDate()}</span>`).join("")}</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Pipeline</h3><span class="spacer"></span>
+          <button class="btn btn-sm" data-go="leads">Open board</button></div>
+        <div class="card-body">
+          ${OPEN_STAGES.map(sid=>{
+            const st=stageById(sid), n=lds.filter(l=>l.stage===sid).length;
+            const max=Math.max(...OPEN_STAGES.map(x=>lds.filter(l=>l.stage===x).length),1);
+            return `<div style="margin-bottom:10px"><div class="mini" style="border:0;padding:0 0 4px">
+              <span>${st.name}</span><b class="num">${n}</b></div>${bar(n,max)}</div>`;}).join("")}
+          <div class="mini" style="margin-top:11px;border-top:1px solid var(--line);padding-top:10px">
+            <span>Trials booked, not yet attended</span><b class="num" style="color:var(--warn)">${trials.length}</b></div>
+          <div class="mini"><span>Follow-ups due or overdue</span><b class="num" style="color:${dueFollow.length?"var(--crit)":"inherit"}">${dueFollow.length}</b></div>
+          <div class="mini"><span>Pipeline value</span><b class="num">${money(lds.filter(l=>OPEN_STAGES.includes(l.stage)).reduce((s,l)=>s+l.value,0))}</b></div>
+        </div>
+      </div>
+    </div>
+
+    ${scoreboard}
+
+    <div class="split3">
+      <div class="card">
+        <div class="card-head"><h3>Renewals due</h3><span class="spacer"></span><button class="btn btn-sm" data-go="members">Members</button></div>
+        <div class="card-body tight"><div class="tbl-wrap"><table class="tbl"><tbody>
+          ${expiring.slice(0,7).map(m=>`<tr data-member="${m.id}"><td>${memberCell(m,true)}</td>
+            <td class="muted">${planById(m.planId).name}</td>
+            <td class="ta-r"><span class="${statusOf(m).cls}">${statusOf(m).label}</span></td></tr>`).join("")
+            || emptyRow(3,"No renewals in the next 30 days.")}
+        </tbody></table></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Payments to chase</h3><span class="spacer"></span><button class="btn btn-sm" data-go="billing">Billing</button></div>
+        <div class="card-body tight"><div class="tbl-wrap"><table class="tbl"><tbody>
+          ${inv.filter(i=>i.status!=="paid").sort((a,b)=>new Date(a.due)-new Date(b.due)).slice(0,7).map(i=>{
+            const m=memberById(i.memberId); return `<tr data-member="${i.memberId}">
+            <td>${m?memberCell(m,true):i.memberId}</td>
+            <td class="num ta-r">${money(i.amount-i.paid)}</td>
+            <td class="ta-r"><span class="pill ${i.status==="overdue"?"pill-crit":"pill-warn"}">${i.status}</span></td></tr>`;}).join("")
+            || emptyRow(3,"Every invoice is settled.")}
+        </tbody></table></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Today on the floor</h3><span class="spacer"></span><span class="hint">${DAYNAMES[TODAY.getDay()]}</span></div>
+        <div class="card-body tight" style="max-height:330px;overflow-y:auto"><div class="tbl-wrap"><table class="tbl"><tbody>
+          ${todayClasses.map(c=>`<tr data-class="${c.id}">
+            <td><b style="font-weight:600">${esc(c.name)}</b><div class="muted" style="font-size:11px">${esc(coachById(c.coachId).name)}${UI.branch==="ALL"?" · "+branchById(c.branchId).name:" · "+c.room}</div></td>
+            <td class="num muted">${c.time}</td>
+            <td class="ta-r" style="min-width:92px"><div class="num" style="font-size:11.5px">${c.booked.length}/${c.cap}${c.waitlist.length?` <span class="muted">+${c.waitlist.length}</span>`:""}</div>
+              ${bar(c.booked.length,c.cap)}</td></tr>`).join("") || emptyRow(3,"No classes scheduled today.")}
+        </tbody></table></div></div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <div class="card-head"><h3>Retention risk</h3>
+          <span class="hint">active members who have stopped turning up</span>
+          <span class="spacer"></span><button class="btn btn-sm" data-go="checkin">Attendance</button></div>
+        <div class="card-body tight"><div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Member</th><th>Last visit</th><th>Visits / 30d</th><th>Membership</th><th></th></tr></thead>
+          <tbody>${risk.sort((a,b)=>atRisk(b)-atRisk(a)).slice(0,8).map(m=>`<tr data-member="${m.id}">
+            <td>${memberCell(m,true)}</td>
+            <td><span class="pill ${atRisk(m)>=30?"pill-crit":"pill-warn"}">${atRisk(m)}d ago</span></td>
+            <td class="num">${visitsSince(m.id,30)}</td>
+            <td><span class="${statusOf(m).cls}">${statusOf(m).label}</span></td>
+            <td class="ta-r"><button class="btn btn-sm" data-nudge="${m.id}">Log win-back call</button></td></tr>`).join("")
+            || emptyRow(5,"Nobody is drifting. Good week.")}</tbody>
+        </table></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Fight camp</h3><span class="spacer"></span><button class="btn btn-sm" data-go="fighters">Squad</button></div>
+        <div class="card-body">
+          ${bouts.length?`<div class="sec-title">Next bouts</div>
+            ${bouts.slice(0,4).map(m=>{const r=readiness(m);return `<div class="mini" style="cursor:pointer" data-member="${m.id}">
+              <span><b style="font-weight:600">${esc(m.name)}</b><div class="muted" style="font-size:11px">${m.weightClass} · ${fmtDs(m.nextBout)} (${days(m.nextBout,TODAY)}d)</div></span>
+              <span class="pill pill-${r.band}">${r.total}</span></div>`;}).join("")}`
+            :'<div class="hint">No bouts on the calendar.</div>'}
+          <div class="sec-title" style="margin-top:14px">Squad readiness</div>
+          ${["good","warn","crit"].map(band=>{
+            const n = camp.filter(x=>x.r.band===band).length;
+            const label = {good:"Camp ready (75+)",warn:"Needs a block (50-74)",crit:"Off the pace (under 50)"}[band];
+            return `<div style="margin-bottom:9px"><div class="mini" style="border:0;padding:0 0 4px">
+              <span>${label}</span><b class="num">${n}</b></div>
+              <div class="meter ${band}"><i style="width:${camp.length?n/camp.length*100:0}%"></i></div></div>`;
+          }).join("")}
+          <div class="mini" style="margin-top:11px;border-top:1px solid var(--line);padding-top:10px">
+            <span>Sparring rounds logged, last 30 days</span>
+            <b class="num">${B(S.spars).filter(s=>days(TODAY,s.ts)<=30).reduce((t,s)=>t+s.rounds,0)}</b></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+/* ============================================================
+   MEMBERS
+   ============================================================ */
+function viewMembers(){
+  const f = UI.mFilter;
+  const all = B(S.members);
+  let list = all.filter(m=>{
+    const k = statusOf(m).key;
+    if(f==="all")   return !m.cancelled;
+    if(f==="risk")  return !m.cancelled && atRisk(m)>=14 && k!=="expired";
+    if(f==="dues")  return duesOf(m.id)>0;
+    if(f==="fight") return m.track==="fight" && !m.cancelled;
+    if(f==="pt")    return S.pt.some(p=>p.memberId===m.id && p.used<p.total);
+    return k===f;
+  });
+  if(UI.mQuery){ const q=UI.mQuery.toLowerCase();
+    list = list.filter(m=>(m.name+" "+m.id+" "+m.phone).toLowerCase().includes(q)); }
+  const sorters = {
+    name:(a,b)=>a.name.localeCompare(b.name),
+    expiry:(a,b)=>new Date(a.end)-new Date(b.end),
+    joined:(a,b)=>new Date(b.joined)-new Date(a.joined),
+    visits:(a,b)=>visitsSince(b.id,30)-visitsSince(a.id,30),
+    dues:(a,b)=>duesOf(b.id)-duesOf(a.id),
+  };
+  list = list.sort(sorters[UI.mSort]);
+  const c = {
+    all: all.filter(m=>!m.cancelled).length,
+    active: all.filter(m=>statusOf(m).key==="active").length,
+    expiring: all.filter(m=>statusOf(m).key==="expiring").length,
+    expired: all.filter(m=>statusOf(m).key==="expired").length,
+    frozen: all.filter(m=>statusOf(m).key==="frozen").length,
+    fight: all.filter(m=>m.track==="fight" && !m.cancelled).length,
+    risk: all.filter(m=>!m.cancelled && atRisk(m)>=14 && statusOf(m).key!=="expired").length,
+    dues: all.filter(m=>duesOf(m.id)>0).length,
+    pt: all.filter(m=>S.pt.some(p=>p.memberId===m.id && p.used<p.total)).length,
+  };
+  const chip=(id,l)=>`<button class="chip" data-mfilter="${id}" aria-pressed="${f===id}">${l} <span class="num muted">${c[id]}</span></button>`;
+
+  return `<div class="stack">
+    <div class="row">
+      <div class="filters">${chip("all","Everyone")}${chip("active","Active")}${chip("expiring","Expiring")}
+        ${chip("expired","Expired")}${chip("frozen","Frozen")}${chip("fight","Fight track")}
+        ${chip("risk","At risk")}${chip("dues","Owes money")}${chip("pt","On PT")}</div>
+      <div style="margin-left:auto" class="row">
+        <input id="mq" class="chip" style="width:186px;padding:6px 10px" placeholder="Filter this list" value="${esc(UI.mQuery)}">
+        <select id="msort" class="chip" style="padding:6px 10px">
+          ${[["name","Name"],["expiry","Expiry date"],["joined","Recently joined"],["visits","Visits (30d)"],["dues","Dues"]]
+            .map(([v,l])=>`<option value="${v}"${UI.mSort===v?" selected":""}>Sort: ${l}</option>`).join("")}
+        </select>
+        <button class="btn btn-sm" id="exportBtn">Export CSV</button>
+      </div>
+    </div>
+    <div class="card"><div class="card-body tight"><div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Member</th>${UI.branch==="ALL"?"<th>Centre</th>":""}<th>Plan</th><th>Trains</th>
+        <th>Membership</th><th>Expires</th><th>Visits / 30d</th><th>Coach</th><th class="ta-r">Dues</th><th></th></tr></thead>
+      <tbody>${list.map(m=>{
+        const st=statusOf(m), d=duesOf(m.id), v30=visitsSince(m.id,30);
+        return `<tr data-member="${m.id}">
+          <td>${memberCell(m)}</td>
+          ${UI.branch==="ALL"?`<td class="muted">${branchById(m.branchId).name}</td>`:""}
+          <td class="muted">${planById(m.planId).name}</td>
+          <td>${discTags(m.disciplines.slice(0,3))}</td>
+          <td><span class="${st.cls}">${st.label}</span></td>
+          <td class="num muted">${fmtDs(m.end)}</td>
+          <td style="min-width:70px"><div class="num" style="font-size:11.5px">${v30}</div>${bar(v30,20)}</td>
+          <td class="muted">${m.coachId?esc(coachById(m.coachId).name.split(" ")[0]):"—"}</td>
+          <td class="ta-r num" style="color:${d?"var(--crit)":"var(--ink-3)"}">${d?money(d):"—"}</td>
+          <td class="ta-r"><button class="btn btn-sm" data-renew="${m.id}">Renew</button></td></tr>`;
+      }).join("") || emptyRow(10,"No members match this filter.")}</tbody>
+    </table></div></div></div>
+    <div class="hint">${list.length} of ${c.all} members shown · ${bLabel()}. Click a row to open the record.</div>
+  </div>`;
+}
+
+/* ---------------- member drawer ---------------- */
+function openMember(id, tab){
+  const m = memberById(id); if(!m) return;
+  const isFighter = m.track==="fight";
+  const tabs = ["overview","attendance", ...(isFighter?["fight"]:[]), "billing"];
+  UI.tab = tabs.includes(tab||UI.tab) ? (tab||UI.tab) : "overview"; UI.tabId = id;
+  const st=statusOf(m), plan=planById(m.planId), co=m.coachId?coachById(m.coachId):null, br=branchById(m.branchId);
+  const pkg = S.pt.find(p=>p.memberId===id);
+  const invs = S.invoices.filter(i=>i.memberId===id).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const visits = S.checkins.filter(c=>c.memberId===id).sort((a,b)=>b.ts.localeCompare(a.ts));
+  const d = duesOf(id);
+  const klasses = S.classes.filter(c=>c.booked.includes(id)||c.waitlist.includes(id));
+
+  const panes = {
+    overview:()=>`
+      <div><div class="sec-title">Membership</div><dl class="dl">
+        <dt>Centre</dt><dd>${br.name} <span class="muted">· ${esc(br.area)}</span></dd>
+        <dt>Plan</dt><dd>${plan.name} · ${money(plan.price)} / ${plan.months}mo</dd>
+        <dt>Status</dt><dd><span class="${st.cls}">${st.label}</span></dd>
+        <dt>Cycle</dt><dd class="num">${fmtD(m.start)} → ${fmtD(m.end)}</dd>
+        <dt>Member since</dt><dd class="num">${fmtD(m.joined)} <span class="muted">(${Math.floor(days(TODAY,m.joined)/30)} months)</span></dd>
+        <dt>Track</dt><dd>${isFighter?'<span class="pill pill-crit">Fight track</span>':'<span class="pill">Fitness track</span>'} <span class="muted">· ${m.level}</span></dd>
+        <dt>Trains</dt><dd>${discTags(m.disciplines)}</dd>
+        <dt>Coach</dt><dd>${co?esc(co.name)+' <span class="muted">· '+esc(co.role)+'</span>':"Not assigned"}</dd>
+        <dt>Goal</dt><dd>${esc(m.goal)}</dd>
+        <dt>Came from</dt><dd>${esc(m.source)}</dd>
+      </dl></div>
+      <div><div class="sec-title">Contact</div><dl class="dl">
+        <dt>Phone</dt><dd class="num">${esc(m.phone)}</dd>
+        <dt>Email</dt><dd style="word-break:break-all">${esc(m.email)}</dd>
+        <dt>Age / sex</dt><dd class="num">${m.age} · ${m.gender}</dd>
+        <dt>Emergency</dt><dd>${esc(m.emergency)}</dd>
+      </dl></div>
+      ${pkg?`<div><div class="sec-title">Personal training</div>
+        <div class="mini"><span>${pkg.total}-session pack with ${esc(coachById(pkg.coachId).name)}</span><b class="num">${pkg.total-pkg.used} left</b></div>
+        <div style="margin-top:7px">${bar(pkg.used,pkg.total)}</div>
+        <div class="mini" style="margin-top:7px"><span class="muted">Expires ${fmtD(pkg.expiry)}</span>
+          <button class="btn btn-sm" data-usept="${id}">Log a session</button></div></div>`:""}
+      ${klasses.length?`<div><div class="sec-title">Booked classes</div>
+        ${klasses.map(c=>`<div class="mini"><span>${esc(c.name)} · ${DAYNAMES[c.dow]} ${c.time}</span>
+          <span class="pill ${c.booked.includes(id)?"pill-good":"pill-warn"}">${c.booked.includes(id)?"Confirmed":"Waitlist"}</span></div>`).join("")}</div>`:""}
+      <div><div class="sec-title">Notes</div>
+        <textarea id="mnote" rows="3" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2)" placeholder="Injuries, preferences, conversations...">${esc(m.notes)}</textarea>
+        <button class="btn btn-sm" style="margin-top:7px" data-savenote="${id}">Save note</button></div>`,
+
+    attendance:()=>{
+      const grid=[]; for(let w=11;w>=0;w--) for(let dd=6;dd>=0;dd--){
+        const day=addD(TODAY,-(w*7+dd)); grid.push({day, hit:visits.some(v=>iso(v.ts)===iso(day))});
+      }
+      return `<div><div class="sec-title">Last 12 weeks</div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">
+          ${grid.map(c=>`<i title="${fmtD(c.day)}${c.hit?" · trained":""}" style="display:block;height:14px;border-radius:2px;background:${c.hit?"var(--data)":"var(--surface-3)"}"></i>`).join("")}</div>
+        <div class="legend"><i style="background:var(--surface-3)"></i> rest <i></i> trained</div>
+        <div class="mini" style="margin-top:13px"><span>Visits, last 30 days</span><b class="num">${visitsSince(id,30)}</b></div>
+        <div class="mini"><span>Visits, last 90 days</span><b class="num">${visitsSince(id,90)}</b></div>
+        <div class="mini"><span>Last visit</span><b class="num">${visits[0]?fmtD(visits[0].ts):"never"}</b></div>
+        <div class="mini"><span>Usual slot</span><b class="num">${visits.length?(visits.filter(v=>new Date(v.ts).getHours()<12).length>visits.length/2?"Mornings":"Evenings"):"—"}</b></div>
+      </div>
+      <div><div class="sec-title">Recent check-ins</div>
+        ${visits.slice(0,14).map(v=>`<div class="mini"><span class="num">${fmtD(v.ts)}</span>
+          <span class="muted num">${new Date(v.ts).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}</span></div>`).join("")
+          || '<div class="empty">No check-ins recorded.</div>'}</div>`;
+    },
+
+    fight:()=>{
+      const r = readiness(m);
+      const sp = sparsOf(id).sort((a,b)=>b.ts.localeCompare(a.ts));
+      const pctOfScale = clamp(m.weight/r.limit*100, 0, 118);
+      const rows = [["Mat time","35",r.parts.mat,`${r.v30} sessions in 30 days`],
+                    ["Sparring","30",r.parts.spar,`${r.r30} rounds in 30 days`],
+                    ["On weight","20",r.parts.weight, r.over>0?`${r.over.toFixed(1)} kg over the limit`:"inside the limit"],
+                    ["Freshness","15",r.parts.fresh, r.ls?`last spar ${days(TODAY,r.ls)} days ago`:"no sparring logged"]];
+      return `<div>
+        <div class="row" style="gap:14px;align-items:center">
+          ${ring(r.total, r.band)}
+          <div><div class="disp" style="font-size:22px;text-transform:uppercase">${r.verdict}</div>
+            <div class="hint">Readiness score out of 100${m.nextBout?` · bout in ${days(m.nextBout,TODAY)} days`:""}</div></div>
+        </div>
+        <div style="margin-top:14px">${rows.map(([l,max,val,note])=>`
+          <div style="margin-bottom:10px"><div class="mini" style="border:0;padding:0 0 4px">
+            <span>${l} <span class="muted">${note}</span></span><b class="num">${val}/${max}</b></div>
+            ${bar(val,Number(max), val/Number(max)>=.75?"good":val/Number(max)>=.45?"warn":"crit")}</div>`).join("")}</div>
+      </div>
+      <div><div class="sec-title">Weight</div>
+        <div class="wclass" style="margin-bottom:7px">
+          <span class="disp" style="font-size:24px">${m.weight.toFixed(1)} kg</span>
+          <span class="pill ${r.over>0?"pill-crit":"pill-good"}">${m.weightClass}</span>
+          <span class="hint">limit ${r.limit} kg</span></div>
+        <div class="scale">
+          <div class="now ${r.over>0?"over":""}" style="width:${pctOfScale}%"></div>
+          <div class="limit" style="left:100%"></div>
+          <b>${r.over>0?"+"+r.over.toFixed(1)+" kg to cut":(r.limit-m.weight).toFixed(1)+" kg of room"}</b>
+        </div>
+        <div class="row" style="margin-top:9px">
+          <input id="wIn" type="number" step="0.1" value="${m.weight}" style="width:96px;padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2)">
+          <button class="btn btn-sm" data-weigh="${id}">Record weigh-in</button>
+        </div>
+      </div>
+      <div><div class="sec-title">Record</div>
+        ${m.record?`<div class="row" style="gap:12px">
+          <span class="record">${m.record.w}<span class="muted">W</span> · ${m.record.l}<span class="muted">L</span> · ${m.record.d}<span class="muted">D</span></span>
+          <span class="pill">${m.level}</span>${m.belt?beltChip(m.belt):""}</div>`
+          :`<div class="hint">No bouts yet · ${m.level}${m.belt?" · "+m.belt+" belt":""}</div>`}
+        <div class="mini" style="margin-top:9px"><span>Next bout</span><b class="num">${m.nextBout?fmtD(m.nextBout)+" ("+days(m.nextBout,TODAY)+"d)":"not scheduled"}</b></div>
+        <div class="mini"><span>Rounds, last 90 days</span><b class="num">${roundsSince(id,90)}</b></div>
+      </div>
+      <div><div class="sec-title">Sparring log</div>
+        <div class="row" style="margin-bottom:9px">
+          <input id="spRounds" type="number" min="1" max="15" value="5" style="width:70px;padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2)">
+          <select id="spType" style="padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2)">
+            <option value="live">Live</option><option value="technical">Technical</option><option value="drill">Drill</option></select>
+          <button class="btn btn-sm btn-primary" data-spar="${id}">Log rounds</button>
+        </div>
+        ${sp.slice(0,12).map(s=>`<div class="mini"><span class="num">${fmtD(s.ts)}</span>
+          <span><span class="tag">${s.partner}</span> <b class="num">${s.rounds} rds</b></span></div>`).join("")
+          || '<div class="hint">No sparring logged yet.</div>'}</div>`;
+    },
+
+    billing:()=>`
+      <div><div class="sec-title">Account</div>
+        <div class="mini"><span>Lifetime paid</span><b class="num">${money(invs.reduce((s,i)=>s+i.paid,0))}</b></div>
+        <div class="mini"><span>Outstanding</span><b class="num" style="color:${d?"var(--crit)":"inherit"}">${money(d)}</b></div>
+        <div class="mini"><span>Next renewal</span><b class="num">${fmtD(m.end)} · ${money(plan.price)}</b></div></div>
+      <div><div class="sec-title">Invoices</div><div class="tbl-wrap"><table class="tbl"><tbody>
+        ${invs.map(i=>`<tr class="norow"><td><b style="font-weight:600" class="num">${i.id}</b>
+          <div class="muted" style="font-size:11px">${esc(i.item)} · ${fmtD(i.date)}</div></td>
+          <td class="ta-r num">${money(i.amount)}${i.paid&&i.paid<i.amount?`<div class="muted" style="font-size:10.5px">${money(i.paid)} paid</div>`:""}</td>
+          <td class="ta-r"><span class="pill ${i.status==="paid"?"pill-good":i.status==="overdue"?"pill-crit":"pill-warn"}">${i.status}</span>
+            ${i.status!=="paid"?`<div style="margin-top:5px"><button class="btn btn-sm" data-pay="${i.id}">Record payment</button></div>`:""}</td></tr>`).join("")
+          || emptyRow(3,"No invoices yet.")}
+      </tbody></table></div></div>`,
+  };
+
+  openDrawer(`
+    <div class="drawer-head">
+      <div class="avatar lg${isFighter?" fighter":""}">${initials(m.name)}</div>
+      <div style="flex:1;min-width:0">
+        <h2 style="font-size:24px;text-transform:uppercase">${esc(m.name)}</h2>
+        <div class="muted num" style="font-size:12px">${m.id} · ${esc(m.phone)} · ${br.name}</div>
+        <div class="row" style="margin-top:7px;gap:5px">
+          <span class="${st.cls}">${st.label}</span>
+          <span class="pill">${plan.name}</span>
+          ${isFighter?`<span class="pill pill-crit">${m.weightClass}</span>`:""}
+          ${d?`<span class="pill pill-crit">${money(d)} due</span>`:""}
+          ${checkedInToday(m.id)?'<span class="pill pill-good">In today</span>':""}
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" data-close="1" aria-label="Close">✕</button>
+    </div>
+    <div class="tabs">${tabs.map(t=>`<button class="tab" data-mtab="${t}" aria-selected="${UI.tab===t}">${t}</button>`).join("")}</div>
+    <div class="drawer-body">${panes[UI.tab]()}</div>
+    <div style="padding:12px 17px;border-top:1px solid var(--line);display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" data-renew="${m.id}">Renew</button>
+      ${checkedInToday(m.id)?"":`<button class="btn btn-sm" data-checkin="${m.id}">Check in</button>`}
+      <button class="btn btn-sm" data-freeze="${m.id}">${m.frozen?"Unfreeze":"Freeze"}</button>
+      <button class="btn btn-sm" data-track="${m.id}">${isFighter?"Move to fitness":"Move to fight track"}</button>
+      <button class="btn btn-sm btn-danger" data-cancel="${m.id}">Cancel</button>
+    </div>`);
+}
+
+/* ============================================================
+   FIGHT SQUAD
+   ============================================================ */
+function viewFighters(){
+  let squad = fighters();
+  if(UI.fFilter==="bout")  squad = squad.filter(m=>m.nextBout);
+  if(UI.fFilter==="over")  squad = squad.filter(m=>readiness(m).over>0);
+  if(UI.fFilter==="pro")   squad = squad.filter(m=>m.level==="Professional");
+  if(UI.fFilter==="cold")  squad = squad.filter(m=>readiness(m).total<50);
+  const rows = squad.map(m=>({m, r:readiness(m)}));
+  const sorters = {
+    readiness:(a,b)=>b.r.total-a.r.total,
+    bout:(a,b)=>(a.m.nextBout?new Date(a.m.nextBout):8e15)-(b.m.nextBout?new Date(b.m.nextBout):8e15),
+    weight:(a,b)=>b.r.over-a.r.over,
+    rounds:(a,b)=>b.r.r30-a.r.r30,
+    name:(a,b)=>a.m.name.localeCompare(b.m.name),
+  };
+  rows.sort(sorters[UI.fSort]);
+
+  const all = fighters();
+  const counts = {all:all.length, bout:all.filter(m=>m.nextBout).length,
+    over:all.filter(m=>readiness(m).over>0).length, pro:all.filter(m=>m.level==="Professional").length,
+    cold:all.filter(m=>readiness(m).total<50).length};
+  const chip=(id,l)=>`<button class="chip" data-ffilter="${id}" aria-pressed="${UI.fFilter===id}">${l} <span class="num muted">${counts[id]}</span></button>`;
+
+  const byClass = WEIGHT_CLASSES.map(w=>({w, n:all.filter(m=>m.weightClass===w.name).length})).filter(x=>x.n);
+  const cmax = Math.max(...byClass.map(x=>x.n),1);
+  const byDisc = DISCIPLINES.filter(d=>d.fight).map(d=>({d, n:all.filter(m=>m.disciplines.includes(d.id)).length})).sort((a,b)=>b.n-a.n);
+  const dmax = Math.max(...byDisc.map(x=>x.n),1);
+  const rounds30 = B(S.spars).filter(s=>days(TODAY,s.ts)<=30).reduce((t,s)=>t+s.rounds,0);
+
+  return `<div class="stack">
+    <div class="kpis">
+      ${kpi("Fight squad", all.length, `${Math.round(all.length/Math.max(activeMembers().length,1)*100)}% of active members`, "var(--accent)")}
+      ${kpi("Camp ready", all.filter(m=>readiness(m).total>=75).length, "scoring 75 or better", "var(--good)")}
+      ${kpi("Over their limit", counts.over, "need a cut before the weigh-in", counts.over?"var(--warn)":"var(--good)")}
+      ${kpi("Rounds this month", rounds30, "sparring rounds logged", "var(--data)")}
+      ${kpi("Bouts booked", counts.bout, counts.bout?"next in "+Math.min(...all.filter(m=>m.nextBout).map(m=>days(m.nextBout,TODAY)))+" days":"calendar clear", "var(--accent)")}
+    </div>
+
+    <div class="row">
+      <div class="filters">${chip("all","Whole squad")}${chip("bout","Bout booked")}${chip("pro","Professional")}
+        ${chip("over","Over weight")}${chip("cold","Off the pace")}</div>
+      <div style="margin-left:auto" class="row">
+        <select id="fsort" class="chip" style="padding:6px 10px">
+          ${[["readiness","Readiness"],["bout","Next bout"],["weight","Weight to cut"],["rounds","Rounds (30d)"],["name","Name"]]
+            .map(([v,l])=>`<option value="${v}"${UI.fSort===v?" selected":""}>Sort: ${l}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+
+    <div class="card"><div class="card-body tight"><div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Fighter</th>${UI.branch==="ALL"?"<th>Centre</th>":""}<th>Level</th><th>Disciplines</th>
+        <th>Weight class</th><th>On weight</th><th>Rounds / 30d</th><th>Mat / 30d</th><th>Readiness</th><th>Next bout</th></tr></thead>
+      <tbody>${rows.map(({m,r})=>`<tr data-member="${m.id}" data-mtabjump="fight">
+        <td>${memberCell(m)}${m.record?`<div class="num" style="font-size:11px;color:var(--ink-3);padding-left:39px">${m.record.w}-${m.record.l}-${m.record.d}</div>`:""}</td>
+        ${UI.branch==="ALL"?`<td class="muted">${branchById(m.branchId).name}</td>`:""}
+        <td><span class="pill${m.level==="Professional"?" pill-crit":""}">${m.level}</span>${m.belt?`<div style="margin-top:4px">${beltChip(m.belt)}</div>`:""}</td>
+        <td>${discTags(m.disciplines)}</td>
+        <td><b style="font-weight:600">${m.weightClass}</b><div class="muted num" style="font-size:11px">${m.weight.toFixed(1)} / ${r.limit} kg</div></td>
+        <td>${r.over>0?`<span class="pill pill-crit">+${r.over.toFixed(1)} kg</span>`:`<span class="pill pill-good">on weight</span>`}</td>
+        <td class="num">${r.r30}</td>
+        <td class="num">${r.v30}</td>
+        <td style="min-width:104px"><div class="row" style="gap:7px">
+          <div style="flex:1">${bar(r.total,100,r.band)}</div>
+          <b class="num" style="font-size:12px;color:var(--${r.band})">${r.total}</b></div></td>
+        <td class="num muted">${m.nextBout?fmtDs(m.nextBout)+" · "+days(m.nextBout,TODAY)+"d":"—"}</td>
+      </tr>`).join("") || emptyRow(10,"No fighters match this filter.")}</tbody>
+    </table></div></div></div>
+
+    <div class="split">
+      <div class="card">
+        <div class="card-head"><h3>Squad by weight class</h3><span class="hint">who you can match against whom</span></div>
+        <div class="card-body">${byClass.map(x=>`<div style="margin-bottom:10px">
+          <div class="mini" style="border:0;padding:0 0 4px"><span>${x.w.name} <span class="muted num">≤ ${x.w.limit} kg</span></span>
+            <b class="num">${x.n}</b></div>${bar(x.n,cmax)}</div>`).join("")}</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Discipline coverage</h3></div>
+        <div class="card-body">${byDisc.map(x=>`<div style="margin-bottom:10px">
+          <div class="mini" style="border:0;padding:0 0 4px"><span>${x.d.name}</span><b class="num">${x.n}</b></div>
+          ${bar(x.n,dmax)}</div>`).join("")}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   CHECK-IN
+   ============================================================ */
+function viewCheckin(){
+  const chk = B(S.checkins);
+  const today = chk.filter(c=>isToday(c.ts)).sort((a,b)=>b.ts.localeCompare(a.ts));
+  const act = activeMembers();
+  const q = UI.cQuery.toLowerCase();
+  const matches = q ? B(S.members).filter(m=>!m.cancelled && (m.name+" "+m.id+" "+m.phone).toLowerCase().includes(q)).slice(0,8) : [];
+
+  const HRS=[...Array(16)].map((_,i)=>i+6);
+  const heat = DAYNAMES.map((_,d)=>HRS.map(h=>chk.filter(c=>{const t=new Date(c.ts);
+    return days(TODAY,c.ts)<=56 && t.getDay()===d && t.getHours()===h;}).length));
+  const hmax = Math.max(...heat.flat(),1);
+  const risk = act.filter(m=>atRisk(m)>=10).sort((a,b)=>atRisk(b)-atRisk(a));
+  const streak = act.map(m=>({m,n:visitsSince(m.id,30)})).sort((a,b)=>b.n-a.n).slice(0,8);
+
+  return `<div class="stack">
+    <div class="kpis">
+      ${kpi("Checked in today", today.length, `${act.length?Math.round(today.length/act.length*100):0}% of the roster`, "var(--accent)")}
+      ${kpi("In the building", today.filter(c=>(Date.now()-new Date(c.ts))<9e6).length, "checked in within 2.5 hours", "var(--good)")}
+      ${kpi("Visits this week", chk.filter(c=>days(TODAY,c.ts)<7).length, "across all members", "var(--data)")}
+      ${kpi("Not seen in 10+ days", risk.length, "worth a message", risk.length?"var(--warn)":"var(--good)")}
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <div class="card-head"><h3>Front desk</h3><span class="spacer"></span><span class="hint">name, member ID or phone</span></div>
+        <div class="card-body">
+          <input id="cq" placeholder="Search a member to check in..." value="${esc(UI.cQuery)}"
+            style="width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:7px;background:var(--surface-2);font-size:15px">
+          ${matches.length?`<div style="margin-top:11px;display:flex;flex-direction:column;gap:7px">
+            ${matches.map(m=>{const st=statusOf(m),dd=duesOf(m.id),inn=checkedInToday(m.id);
+              return `<div class="row" style="padding:9px 11px;border:1px solid var(--line);border-radius:7px;background:var(--surface-2)">
+                <div class="avatar${m.track==="fight"?" fighter":""}">${initials(m.name)}</div>
+                <div style="flex:1;min-width:0"><b style="font-weight:600">${esc(m.name)}</b>
+                  <div class="muted num" style="font-size:11px">${m.id} · ${planById(m.planId).name} · ${branchById(m.branchId).name}</div></div>
+                <span class="${st.cls}">${st.label}</span>
+                ${dd?`<span class="pill pill-crit">${money(dd)} due</span>`:""}
+                ${inn?'<span class="pill pill-good">Already in</span>'
+                  :st.key==="expired"?`<button class="btn btn-sm btn-primary" data-renew="${m.id}">Renew to enter</button>`
+                  :`<button class="btn btn-sm btn-primary" data-checkin="${m.id}">Check in</button>`}
+              </div>`;}).join("")}</div>`
+            : q ? '<div class="empty">No member matches that.</div>' : ""}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Today's log</h3><span class="spacer"></span><span class="num muted">${today.length}</span></div>
+        <div class="card-body tight" style="max-height:410px;overflow-y:auto"><div class="tbl-wrap"><table class="tbl"><tbody>
+          ${today.map(c=>{const m=memberById(c.memberId); if(!m) return "";
+            return `<tr data-member="${m.id}"><td>${memberCell(m,true)}</td>
+              <td class="ta-r num muted">${new Date(c.ts).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}</td></tr>`;}).join("")
+            || emptyRow(2,"Nobody has checked in yet today.")}
+        </tbody></table></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>When the floor is busy</h3>
+        <span class="hint">check-ins by hour, last 8 weeks — use it to staff the desk and place classes</span></div>
+      <div class="card-body"><div class="heat">
+        <span></span>${HRS.map(h=>`<span class="hh">${h}</span>`).join("")}
+        ${DAYNAMES.map((dn,di)=>`<span class="hd">${dn}</span>`+HRS.map((h,hi)=>{
+          const v=heat[di][hi];
+          return `<i style="opacity:${v?(0.14+0.86*v/hmax).toFixed(2):0.06}" title="${dn} ${h}:00 — ${v} check-ins"></i>`;}).join("")).join("")}
+      </div>
+      <div class="legend"><span>quiet</span><i style="opacity:.1"></i><i style="opacity:.35"></i><i style="opacity:.65"></i><i></i><span>peak (${hmax})</span></div></div>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <div class="card-head"><h3>Drifting away</h3><span class="spacer"></span><span class="hint">${risk.length} members</span></div>
+        <div class="card-body tight" style="max-height:400px;overflow-y:auto"><div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Member</th><th>Last visit</th><th>Expires</th><th></th></tr></thead>
+          <tbody>${risk.slice(0,12).map(m=>`<tr data-member="${m.id}">
+            <td>${memberCell(m,true)}</td>
+            <td><span class="pill ${atRisk(m)>=30?"pill-crit":"pill-warn"}">${atRisk(m)}d</span></td>
+            <td class="num muted">${fmtDs(m.end)}</td>
+            <td class="ta-r"><button class="btn btn-sm" data-nudge="${m.id}">Log win-back call</button></td></tr>`).join("")
+            || emptyRow(4,"Everyone is showing up.")}</tbody>
+        </table></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Most consistent</h3><span class="hint">last 30 days</span></div>
+        <div class="card-body tight"><div class="tbl-wrap"><table class="tbl"><tbody>
+          ${streak.map(s=>`<tr data-member="${s.m.id}"><td>${memberCell(s.m,true)}</td>
+            <td style="min-width:86px">${bar(s.n,streak[0].n||1)}</td><td class="ta-r num">${s.n}</td></tr>`).join("")
+            || emptyRow(3,"No attendance yet.")}
+        </tbody></table></div></div>
+      </div>
+    </div>
+  </div>`;
+}
+/* ============================================================
+   LEADS & TRIALS
+   ============================================================ */
+function viewLeads(){
+  const lds  = B(S.leads);
+  const open = lds.filter(l=>OPEN_STAGES.includes(l.stage));
+  const won  = lds.filter(l=>l.stage==="won");
+  const lost = lds.filter(l=>l.stage==="lost");
+  const closed = won.length+lost.length;
+  const dueFollow = open.filter(l=>days(TODAY,l.followUp)>=0).sort((a,b)=>new Date(a.followUp)-new Date(b.followUp));
+  const booked = lds.filter(l=>l.trialDate);
+  const attended = lds.filter(l=>l.trialAttended);
+  const trialWon = won.filter(l=>l.trialAttended);
+  const upcoming = lds.filter(l=>l.stage==="trial" && l.trialDate).sort((a,b)=>new Date(a.trialDate)-new Date(b.trialDate));
+
+  const bySource = SOURCES.map(s=>({s, total:lds.filter(l=>l.source===s).length, won:won.filter(l=>l.source===s).length}))
+                    .filter(x=>x.total).sort((a,b)=>b.total-a.total);
+  const smax = Math.max(...bySource.map(x=>x.total),1);
+  const byBranch = BRANCHES.map(b=>{
+    const bl = S.leads.filter(l=>l.branchId===b.id);
+    const bw = bl.filter(l=>l.stage==="won").length, bc = bl.filter(l=>["won","lost"].includes(l.stage)).length;
+    return {b, open:bl.filter(l=>OPEN_STAGES.includes(l.stage)).length, won:bw, rate: bc?Math.round(bw/bc*100):0};
+  });
+
+  // the free-trial funnel the website's CTA feeds
+  const funnel = [
+    {label:"Enquiries", n:lds.length},
+    {label:"Trial booked", n:booked.length},
+    {label:"Trial attended", n:attended.length},
+    {label:"Joined after trial", n:trialWon.length},
+  ];
+
+  return `<div class="stack">
+    <div class="kpis">
+      ${kpi("Open enquiries", open.length, `${money(open.reduce((s,l)=>s+l.value,0))} in play`, "var(--accent)")}
+      ${kpi("Follow-ups due", dueFollow.length, "today or overdue", dueFollow.length?"var(--crit)":"var(--good)")}
+      ${kpi("Trials this week", upcoming.filter(l=>days(l.trialDate,TODAY)<=7&&days(l.trialDate,TODAY)>=-1).length, `${upcoming.length} booked in total`, "var(--warn)")}
+      ${kpi("Trial → member", (attended.length?Math.round(trialWon.length/attended.length*100):0)+"%", `${trialWon.length} of ${attended.length} who showed up`, "var(--good)")}
+      ${kpi("Overall conversion", (closed?Math.round(won.length/closed*100):0)+"%", `${won.length} joined · ${lost.length} lost`, "var(--data)")}
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Pipeline</h3><span class="hint">click a card to open it · ← → move the stage</span>
+        <span class="spacer"></span><button class="btn btn-sm btn-primary" id="newLead">Add enquiry</button></div>
+      <div class="card-body"><div class="board">
+        ${STAGES.map(st=>{
+          const ls = lds.filter(l=>l.stage===st.id).sort((a,b)=>new Date(a.followUp)-new Date(b.followUp));
+          return `<div class="col">
+            <div class="col-head"><span class="stage-dot" style="background:${st.color}"></span><b>${st.name}</b><span class="n">${ls.length}</span></div>
+            <div class="col-body">${ls.map(l=>{
+              const isOpen = OPEN_STAGES.includes(l.stage);
+              const late = isOpen && days(TODAY,l.followUp)>0, now = isOpen && days(TODAY,l.followUp)===0;
+              return `<div class="lead" data-lead="${l.id}">
+                <b>${esc(l.name)}</b>
+                <div class="meta"><span class="num">${esc(l.phone)}</span>${UI.branch==="ALL"?`<span class="tag">${branchById(l.branchId).name}</span>`:""}</div>
+                <div class="meta"><span class="tag">${esc(l.source)}</span><span class="tag">${esc(discById(l.wants).short)}</span><span class="num">${money(l.value)}</span></div>
+                ${l.trialDate&&l.stage==="trial"?`<div class="meta"><span class="pill pill-warn">Trial ${fmtDs(l.trialDate)}</span></div>`:""}
+                <div class="meta" style="margin-top:5px;justify-content:space-between">
+                  <span class="${late?"pill pill-crit":now?"pill pill-warn":"tag"}">${isOpen?(late?days(TODAY,l.followUp)+"d late":now?"today":fmtDs(l.followUp)):esc(l.owner)}</span>
+                  <span style="display:flex;gap:2px">
+                    <button class="btn btn-sm btn-ghost" data-move="${l.id}:-1" aria-label="Move back">←</button>
+                    <button class="btn btn-sm btn-ghost" data-move="${l.id}:1" aria-label="Move forward">→</button></span>
+                </div></div>`;}).join("") || '<div class="hint" style="padding:7px 3px">Empty</div>'}
+            </div></div>`;}).join("")}
+      </div></div>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <div class="card-head"><h3>Today's call list</h3><span class="spacer"></span><span class="hint">${dueFollow.length} to work through</span></div>
+        <div class="card-body tight"><div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Lead</th><th>Stage</th><th>Wants</th><th>Owner</th><th>Due</th><th></th></tr></thead>
+          <tbody>${dueFollow.slice(0,10).map(l=>{const late=days(TODAY,l.followUp)>0;
+            return `<tr data-lead="${l.id}">
+            <td><div class="cell-name"><div class="avatar">${initials(l.name)}</div>
+              <div><b>${esc(l.name)}</b><span>${esc(l.phone)}</span></div></div></td>
+            <td><span class="pill">${stageById(l.stage).name}</span></td>
+            <td>${discTags([l.wants])}</td>
+            <td class="muted">${esc(l.owner)}</td>
+            <td><span class="pill ${late?"pill-crit":"pill-warn"}">${late?days(TODAY,l.followUp)+"d late":"today"}</span></td>
+            <td class="ta-r"><button class="btn btn-sm" data-called="${l.id}">Log call</button></td></tr>`;}).join("")
+            || emptyRow(6,"Nothing overdue. The pipeline is current.")}</tbody>
+        </table></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Free-trial funnel</h3><span class="hint">where the website CTA lands</span></div>
+        <div class="card-body">
+          ${funnel.map((f,i)=>`<div style="margin-bottom:11px">
+            <div class="mini" style="border:0;padding:0 0 4px"><span>${f.label}</span>
+              <span><b class="num">${f.n}</b>${i?` <span class="muted num" style="font-size:11px">${funnel[i-1].n?Math.round(f.n/funnel[i-1].n*100):0}%</span>`:""}</span></div>
+            <div class="meter ${i===3?"good":""}"><i style="width:${funnel[0].n?f.n/funnel[0].n*100:0}%"></i></div></div>`).join("")}
+          ${upcoming.length?`<div class="sec-title" style="margin-top:14px">Trials coming up</div>
+            ${upcoming.slice(0,5).map(l=>`<div class="mini" style="cursor:pointer" data-lead="${l.id}">
+              <span>${esc(l.name)} <span class="muted">· ${discById(l.wants).short}</span></span>
+              <span class="num muted">${fmtDs(l.trialDate)}</span></div>`).join("")}`:""}
+        </div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <div class="card-head"><h3>Where enquiries come from</h3><span class="hint">and which sources actually join</span></div>
+        <div class="card-body">${bySource.map(x=>`<div style="margin-bottom:11px">
+          <div class="mini" style="border:0;padding:0 0 4px"><span>${esc(x.s)}</span>
+            <span><b class="num">${x.total}</b> <span class="muted num" style="font-size:11px">· ${x.won} joined</span></span></div>
+          ${bar(x.total,smax)}</div>`).join("")}</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Conversion by centre</h3></div>
+        <div class="card-body tight"><div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Centre</th><th>Manager</th><th>Open</th><th>Joined</th><th class="ta-r">Close rate</th></tr></thead>
+          <tbody>${byBranch.map(x=>`<tr data-branch="${x.b.id}">
+            <td><b style="font-weight:600">${x.b.name}</b></td><td class="muted">${esc(x.b.manager)}</td>
+            <td class="num">${x.open}</td><td class="num">${x.won}</td>
+            <td class="ta-r"><div class="row" style="gap:7px;justify-content:flex-end">
+              <div style="width:70px">${bar(x.rate,100,x.rate>=50?"good":x.rate>=30?"warn":"crit")}</div>
+              <b class="num" style="font-size:12px">${x.rate}%</b></div></td></tr>`).join("")}</tbody>
+        </table></div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openLead(id){
+  const l = S.leads.find(x=>x.id===id); if(!l) return;
+  const st = stageById(l.stage), br = branchById(l.branchId);
+  openDrawer(`
+    <div class="drawer-head">
+      <div class="avatar lg">${initials(l.name)}</div>
+      <div style="flex:1;min-width:0">
+        <h2 style="font-size:24px;text-transform:uppercase">${esc(l.name)}</h2>
+        <div class="muted num" style="font-size:12px">${l.id} · ${esc(l.phone)} · ${br.name}</div>
+        <div class="row" style="margin-top:7px;gap:5px">
+          <span class="pill" style="color:${st.color}">${st.name}</span>
+          <span class="pill">${esc(l.source)}</span>
+          <span class="pill pill-data">${esc(discById(l.wants).name)}</span>
+          <span class="pill num">${money(l.value)}</span></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" data-close="1" aria-label="Close">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div><div class="sec-title">Enquiry</div><dl class="dl">
+        <dt>Centre</dt><dd>${br.name} · ${esc(br.area)}</dd>
+        <dt>Owner</dt><dd>${esc(l.owner)}</dd>
+        <dt>Created</dt><dd class="num">${fmtD(l.created)} <span class="muted">(${days(TODAY,l.created)}d ago)</span></dd>
+        <dt>Interested in</dt><dd>${planById(l.interest).name} · ${money(planById(l.interest).price)}</dd>
+        <dt>Free trial</dt><dd>${l.trialDate?fmtD(l.trialDate)+(l.trialAttended?' <span class="pill pill-good">attended</span>':' <span class="pill pill-warn">booked</span>'):"not booked"}</dd>
+        <dt>Next follow-up</dt><dd class="num">${fmtD(l.followUp)}</dd>
+      </dl></div>
+      <div><div class="sec-title">Move stage</div><div class="filters">
+        ${STAGES.map(s=>`<button class="chip" data-setstage="${l.id}:${s.id}" aria-pressed="${l.stage===s.id}">${s.name}</button>`).join("")}
+      </div></div>
+      <div><div class="sec-title">Activity</div>
+        ${l.log.slice().reverse().map(e=>`<div class="mini"><span>${esc(e.text)}</span><span class="muted num">${fmtDs(e.ts)}</span></div>`).join("")}
+        <div class="row" style="margin-top:9px">
+          <input id="logtxt" placeholder="Log a call, message or visit..." style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2)">
+          <button class="btn btn-sm" data-addlog="${l.id}">Add</button></div>
+      </div>
+    </div>
+    <div style="padding:12px 17px;border-top:1px solid var(--line);display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" data-convert="${l.id}">Convert to member</button>
+      ${l.trialDate?"":`<button class="btn btn-sm" data-booktrial="${l.id}">Book free trial</button>`}
+      <button class="btn btn-sm" data-called="${l.id}">Log call &amp; snooze 2d</button>
+      <button class="btn btn-sm btn-danger" data-setstage="${l.id}:lost">Mark lost</button>
+    </div>`);
+}
+
+/* ============================================================
+   TIMETABLE
+   ============================================================ */
+function viewClasses(){
+  const all = B(S.classes);
+  const seats = all.reduce((s,c)=>s+c.cap,0);
+  const bookd = all.reduce((s,c)=>s+c.booked.length,0);
+  const waits = all.reduce((s,c)=>s+c.waitlist.length,0);
+  const full  = all.filter(c=>c.booked.length>=c.cap).length;
+  const byName = {};
+  all.forEach(c=>{ byName[c.name] = byName[c.name] || {cap:0,booked:0,n:0,disc:c.disc,level:c.level};
+    byName[c.name].cap+=c.cap; byName[c.name].booked+=c.booked.length; byName[c.name].n++; });
+  const ranked = Object.entries(byName).map(([name,v])=>({name,...v,fill:v.booked/v.cap})).sort((a,b)=>b.fill-a.fill);
+
+  return `<div class="stack">
+    <div class="kpis">
+      ${kpi("Weekly sessions", all.length, `${Object.keys(byName).length} formats · ${B(COACHES).length} coaches`, "var(--accent)")}
+      ${kpi("Seat occupancy", (seats?Math.round(bookd/seats*100):0)+"%", `${bookd} of ${seats} seats booked`, "var(--good)")}
+      ${kpi("Sessions at capacity", full, full?"consider adding a slot":"room everywhere", full?"var(--warn)":"var(--good)")}
+      ${kpi("On waitlists", waits, "members wanting a seat", waits?"var(--warn)":"var(--line-strong)")}
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>This week</h3><span class="hint">click a session to manage its roster</span>
+        <span class="spacer"></span><span class="hint">${bLabel()}</span></div>
+      <div class="card-body"><div class="sched">
+        ${DAYNAMES.map((dn,d)=>`<div class="day-col">
+          <div class="day-name ${d===TODAY.getDay()?"today":""}">${dn}${d===TODAY.getDay()?" · today":""}</div>
+          ${all.filter(c=>c.dow===d).sort((a,b)=>a.time.localeCompare(b.time)).map(c=>{
+            const co=coachById(c.coachId), fill=c.booked.length/c.cap;
+            const col = fill>=1?"var(--crit)":fill>=.8?"var(--warn)":DISCIPLINES.find(x=>x.id===c.disc).fight?"var(--accent)":"var(--data)";
+            return `<div class="klass" data-class="${c.id}" style="border-left-color:${col}">
+              <span class="t">${c.time}</span><b>${esc(c.name)}</b>
+              <div class="muted" style="font-size:10.5px">${esc(co.name.split(" ")[0])} · ${esc(c.room)}${UI.branch==="ALL"?" · "+branchById(c.branchId).name:""}</div>
+              <div class="cap"><span class="num">${c.booked.length}/${c.cap}</span>
+                ${c.waitlist.length?`<span class="num" style="color:var(--warn)">+${c.waitlist.length} wl</span>`:""}</div>
+              <div style="margin-top:4px">${bar(c.booked.length,c.cap)}</div></div>`;}).join("")
+            || '<div class="hint" style="padding:5px 2px">—</div>'}
+        </div>`).join("")}
+      </div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Which formats fill up</h3>
+        <span class="hint">average occupancy across the week — the low ones are costing you floor time</span></div>
+      <div class="card-body tight"><div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Format</th><th>Discipline</th><th>Level</th><th>Sessions / week</th><th>Occupancy</th><th class="ta-r">Booked</th></tr></thead>
+        <tbody>${ranked.map(r=>`<tr class="norow">
+          <td><b style="font-weight:600">${esc(r.name)}</b></td>
+          <td>${discTags([r.disc])}</td>
+          <td class="muted">${r.level}</td>
+          <td class="num">${r.n}</td>
+          <td style="min-width:146px"><div class="row" style="gap:8px">
+            <div style="flex:1">${bar(r.booked,r.cap, r.fill>=.85?"good":r.fill<.55?"crit":"")}</div>
+            <b class="num" style="font-size:12px">${Math.round(r.fill*100)}%</b></div></td>
+          <td class="ta-r num">${r.booked}/${r.cap}</td></tr>`).join("") || emptyRow(6,"No classes at this centre.")}</tbody>
+      </table></div></div>
+    </div>
+  </div>`;
+}
+
+function openClass(id){
+  const c = S.classes.find(x=>x.id===id); if(!c) return;
+  const co = coachById(c.coachId), br = branchById(c.branchId);
+  const row = (mid, wait) => {
+    const m = memberById(mid); if(!m) return "";
+    return `<div class="mini"><span style="display:flex;gap:8px;align-items:center">
+      <span class="avatar${m.track==="fight"?" fighter":""}" style="width:24px;height:24px;font-size:11px">${initials(m.name)}</span>
+      <span>${esc(m.name)}</span></span>
+      <span style="display:flex;gap:6px;align-items:center">
+        ${wait?`<button class="btn btn-sm" data-promote="${c.id}:${mid}">Give seat</button>`:""}
+        <button class="btn btn-sm btn-ghost" data-unbook="${c.id}:${mid}">Remove</button></span></div>`;
+  };
+  const eligible = S.members.filter(m=>m.branchId===c.branchId && !m.cancelled && new Date(m.end)>=TODAY
+                     && !c.booked.includes(m.id) && !c.waitlist.includes(m.id))
+                   .sort((a,b)=>a.name.localeCompare(b.name));
+  openDrawer(`
+    <div class="drawer-head">
+      <div style="flex:1">
+        <div class="eyebrow">${DAYNAMES[c.dow]} · ${c.time} · ${c.dur} min · ${br.name}</div>
+        <h2 style="font-size:24px;margin-top:4px;text-transform:uppercase">${esc(c.name)}</h2>
+        <div class="muted" style="font-size:12px">${esc(co.name)} · ${esc(c.room)} · ${c.level}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" data-close="1" aria-label="Close">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div><div class="sec-title">Capacity</div>
+        <div class="mini" style="border:0;padding:0 0 6px"><span>${c.booked.length} of ${c.cap} seats taken</span>
+          <b class="num">${Math.round(c.booked.length/c.cap*100)}%</b></div>
+        ${bar(c.booked.length,c.cap)}
+        <div class="row" style="margin-top:11px">
+          <select id="bookSel" style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2)">
+            ${eligible.map(m=>`<option value="${m.id}">${esc(m.name)} · ${m.id}</option>`).join("") || '<option value="">No eligible members</option>'}
+          </select>
+          <button class="btn btn-sm btn-primary" data-book="${c.id}">Book</button></div>
+      </div>
+      <div><div class="sec-title">Roster (${c.booked.length})</div>
+        ${c.booked.map(m=>row(m,false)).join("") || '<div class="empty">No bookings yet.</div>'}</div>
+      ${c.waitlist.length?`<div><div class="sec-title">Waitlist (${c.waitlist.length})</div>
+        ${c.waitlist.map(m=>row(m,true)).join("")}</div>`:""}
+    </div>`);
+}
+
+/* ============================================================
+   COACHES
+   ============================================================ */
+function viewCoaches(){
+  const staff = UI.branch==="ALL" ? COACHES : COACHES.filter(c=>c.branchId===UI.branch);
+  const rows = staff.map(t=>{
+    const pkgs = S.pt.filter(p=>p.coachId===t.id);
+    const clients = S.members.filter(m=>m.coachId===t.id && !m.cancelled);
+    const klasses = S.classes.filter(c=>c.coachId===t.id);
+    const delivered = pkgs.reduce((s,p)=>s+p.used,0);
+    const remaining = pkgs.reduce((s,p)=>s+(p.total-p.used),0);
+    const seats = klasses.reduce((s,c)=>s+c.booked.length,0);
+    const caps  = klasses.reduce((s,c)=>s+c.cap,0);
+    const fightersCoached = clients.filter(m=>m.track==="fight").length;
+    const payout = delivered*t.rate*0.5 + klasses.length*500;
+    return {t,pkgs,clients,klasses,delivered,remaining,seats,caps,payout,fightersCoached};
+  }).sort((a,b)=>b.payout-a.payout);
+
+  return `<div class="stack">
+    <div class="kpis">
+      ${kpi("Coaches", staff.length, `${S.pt.filter(p=>staff.some(s=>s.id===p.coachId)).length} personal-training packs`, "var(--accent)")}
+      ${kpi("PT sessions delivered", rows.reduce((s,r)=>s+r.delivered,0), "lifetime across packs", "var(--good)")}
+      ${kpi("Sessions owed", rows.reduce((s,r)=>s+r.remaining,0), "prepaid and not yet used", "var(--warn)")}
+      ${kpi("Estimated payouts", money(rows.reduce((s,r)=>s+r.payout,0)), "PT commission + class fees", "var(--data)")}
+    </div>
+    <div class="split3">
+      ${rows.map(r=>`<div class="card ${r.t.disc.some(d=>discById(d).fight)?"corner-red":"corner-blue"}">
+        <div class="card-head">
+          <div class="avatar lg fighter">${initials(r.t.name)}</div>
+          <div style="flex:1;min-width:0">
+            <h3 style="font-size:19px">${esc(r.t.name)}</h3>
+            <div class="muted" style="font-size:12px">${esc(r.t.role)} · ${branchById(r.t.branchId).name} · since ${r.t.since}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row" style="gap:5px;margin-bottom:11px">
+            ${discTags(r.t.disc)}<span class="tag num">${money(r.t.rate)}/session</span></div>
+          <div class="mini"><span>PT clients</span><b class="num">${r.clients.length}</b></div>
+          <div class="mini"><span>Fighters coached</span><b class="num">${r.fightersCoached}</b></div>
+          <div class="mini"><span>Sessions delivered</span><b class="num">${r.delivered}</b></div>
+          <div class="mini"><span>Sessions owed</span><b class="num" style="color:${r.remaining>40?"var(--warn)":"inherit"}">${r.remaining}</b></div>
+          <div class="mini"><span>Classes / week</span><b class="num">${r.klasses.length}</b></div>
+          <div class="mini"><span>Class occupancy</span><b class="num">${r.caps?Math.round(r.seats/r.caps*100):0}%</b></div>
+          <div class="mini"><span>Estimated payout</span><b class="num">${money(r.payout)}</b></div>
+          <div class="sec-title" style="margin-top:12px">Class load</div>
+          ${r.klasses.length?r.klasses.sort((a,b)=>a.dow-b.dow||a.time.localeCompare(b.time)).map(c=>`
+            <div class="mini" style="cursor:pointer" data-class="${c.id}">
+              <span>${DAYNAMES[c.dow]} ${c.time} · ${esc(c.name)}</span>
+              <span class="num muted">${c.booked.length}/${c.cap}</span></div>`).join("")
+            :'<div class="hint">No group classes assigned.</div>'}
+        </div>
+      </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   BILLING
+   ============================================================ */
+function viewBilling(){
+  const f = UI.bFilter;
+  const inv = B(S.invoices);
+  let list = inv.slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(f!=="all") list = list.filter(i=> f==="unpaid" ? i.status!=="paid" : i.status===f);
+
+  const mStart = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+  const collected = inv.filter(i=>new Date(i.date)>=mStart).reduce((s,i)=>s+i.paid,0);
+  const billed    = inv.filter(i=>new Date(i.date)>=mStart).reduce((s,i)=>s+i.amount,0);
+  const dues      = inv.filter(i=>i.status!=="paid").reduce((s,i)=>s+(i.amount-i.paid),0);
+  const overdue   = inv.filter(i=>i.status==="overdue");
+
+  const months=[];
+  for(let k=5;k>=0;k--){
+    const from=new Date(TODAY.getFullYear(),TODAY.getMonth()-k,1), to=new Date(TODAY.getFullYear(),TODAY.getMonth()-k+1,1);
+    months.push({label:from.toLocaleDateString("en-IN",{month:"short"}),
+      v:inv.filter(i=>{const d=new Date(i.date);return d>=from&&d<to;}).reduce((s,i)=>s+i.paid,0)});
+  }
+  const rmax = Math.max(...months.map(m=>m.v),1);
+  const act = activeMembers();
+  const byPlan = PLANS.map(p=>({p, n:act.filter(m=>m.planId===p.id).length}))
+    .map(x=>({...x, mrr:x.n*x.p.price/x.p.months})).filter(x=>x.n).sort((a,b)=>b.mrr-a.mrr);
+  const mrr = byPlan.reduce((s,x)=>s+x.mrr,0);
+  const c = {all:inv.length, unpaid:inv.filter(i=>i.status!=="paid").length, overdue:overdue.length,
+    partial:inv.filter(i=>i.status==="partial").length, paid:inv.filter(i=>i.status==="paid").length};
+  const chip=(id,l)=>`<button class="chip" data-bfilter="${id}" aria-pressed="${f===id}">${l} <span class="num muted">${c[id]}</span></button>`;
+
+  return `<div class="stack">
+    <div class="kpis">
+      ${kpi("Collected this month", money(collected), `of ${money(billed)} billed`, "var(--good)")}
+      ${kpi("Monthly recurring", money(mrr), "normalised across all plans", "var(--accent)")}
+      ${kpi("Outstanding", money(dues), `${c.unpaid} open invoices`, "var(--crit)")}
+      ${kpi("Overdue", overdue.length, money(overdue.reduce((s,i)=>s+(i.amount-i.paid),0))+" past the due date", overdue.length?"var(--crit)":"var(--good)")}
+    </div>
+    <div class="split">
+      <div class="card">
+        <div class="card-head"><h3>Collections, last 6 months</h3><span class="hint">the current month is still in progress</span></div>
+        <div class="card-body">
+          <div class="bars">${months.map(m=>`<div class="bar ${m.v===rmax?"hi":""}" style="height:${Math.max(2,m.v/rmax*100)}%" title="${m.label} · ${money(m.v)}"></div>`).join("")}</div>
+          <div class="bars-x">${months.map(m=>`<span>${m.label}</span>`).join("")}</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Revenue by plan</h3><span class="hint">monthly equivalent</span></div>
+        <div class="card-body">${byPlan.map(x=>`<div style="margin-bottom:10px">
+          <div class="mini" style="border:0;padding:0 0 4px"><span>${x.p.name} <span class="muted num">· ${x.n}</span></span>
+            <b class="num">${money(x.mrr)}</b></div>${bar(x.mrr, byPlan[0].mrr||1, x.p.track==="fight"?"crit":"")}</div>`).join("")}
+          <div class="legend"><i style="background:var(--crit)"></i> fight track <i></i> fitness track</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="filters">${chip("all","All")}${chip("unpaid","Unpaid")}${chip("overdue","Overdue")}${chip("partial","Partial")}${chip("paid","Paid")}</div>
+        <span class="spacer"></span><button class="btn btn-sm" id="exportInv">Export CSV</button></div>
+      <div class="card-body tight"><div class="tbl-wrap" style="max-height:560px;overflow-y:auto"><table class="tbl">
+        <thead><tr><th>Invoice</th><th>Member</th>${UI.branch==="ALL"?"<th>Centre</th>":""}<th>Item</th><th>Issued</th><th>Due</th>
+          <th class="ta-r">Amount</th><th class="ta-r">Balance</th><th>Status</th><th></th></tr></thead>
+        <tbody>${list.slice(0,140).map(i=>{const m=memberById(i.memberId), bal=i.amount-i.paid;
+          return `<tr data-member="${i.memberId}">
+          <td class="num"><b style="font-weight:600">${i.id}</b></td>
+          <td>${m?`<b style="font-weight:600">${esc(m.name)}</b>`:"—"}</td>
+          ${UI.branch==="ALL"?`<td class="muted">${branchById(i.branchId).name}</td>`:""}
+          <td class="muted">${esc(i.item)}</td>
+          <td class="num muted">${fmtDs(i.date)}</td>
+          <td class="num muted">${fmtDs(i.due)}</td>
+          <td class="ta-r num">${money(i.amount)}</td>
+          <td class="ta-r num" style="color:${bal?"var(--crit)":"var(--ink-3)"}">${bal?money(bal):"—"}</td>
+          <td><span class="pill ${i.status==="paid"?"pill-good":i.status==="overdue"?"pill-crit":i.status==="partial"?"pill-warn":""}">${i.status}</span></td>
+          <td class="ta-r">${i.status!=="paid"?`<button class="btn btn-sm" data-pay="${i.id}">Record payment</button>`
+            :`<span class="muted" style="font-size:11px">${esc(i.method||"")}</span>`}</td></tr>`;}).join("")
+          || emptyRow(10,"No invoices match this filter.")}</tbody>
+      </table></div></div>
+    </div>
+  </div>`;
+}
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+const nextInvoiceId = () => "INV-"+(++S.seq.i);
+const nextMemberId  = () => "FF-"+(++S.seq.m);
+const defaultBranch = () => UI.branch==="ALL" ? BRANCHES[0].id : UI.branch;
+
+function doCheckin(id){
+  const m = memberById(id); if(!m) return;
+  const st = statusOf(m);
+  if(st.key==="expired"){ toast(m.name+" — membership expired on "+fmtD(m.end)); return; }
+  if(checkedInToday(id)){ toast(m.name+" is already checked in."); return; }
+  S.checkins.push({memberId:id, branchId:m.branchId, ts:new Date().toISOString()});
+  const d = duesOf(id);
+  toast(m.name+" checked in"+(d?` · ${money(d)} still due`:"")+(st.key==="expiring"?` · ${st.label}`:""));
+  UI.cQuery=""; render();
+  if($("#drawer").classList.contains("on")) openMember(id, UI.tab);
+}
+
+function renewModal(id){
+  const m = memberById(id); if(!m) return;
+  const cur = planById(m.planId);
+  openModal(`
+    <div class="modal-head"><h2 style="font-size:22px;text-transform:uppercase">Renew ${esc(m.name)}</h2>
+      <div class="hint" style="margin-top:3px">${branchById(m.branchId).name} · current cycle ends ${fmtD(m.end)}</div></div>
+    <div class="modal-body">
+      <div class="field"><label>Plan</label><select id="rPlan">
+        ${PLANS.map(p=>`<option value="${p.id}"${p.id===cur.id?" selected":""}>${p.name} — ${money(p.price)} / ${p.months} month${p.months>1?"s":""}</option>`).join("")}
+      </select></div>
+      <div class="grid2">
+        <div class="field"><label>Starts</label><input id="rStart" type="date" value="${iso(new Date(m.end)>TODAY?m.end:TODAY)}"></div>
+        <div class="field"><label>Discount (₹)</label><input id="rDisc" type="number" min="0" step="100" value="0"></div>
+      </div>
+      <div class="field"><label>Payment</label><select id="rPay">
+        <option value="UPI">Paid now — UPI</option><option value="Card">Paid now — Card</option>
+        <option value="Cash">Paid now — Cash</option><option value="">Invoice it, collect later</option></select></div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="1">Cancel</button>
+      <button class="btn btn-primary" data-dorenew="${id}">Confirm renewal</button></div>`);
+}
+function doRenew(id){
+  const m = memberById(id);
+  const plan = planById($("#rPlan").value);
+  const start = new Date($("#rStart").value || TODAY);
+  const disc = Math.max(0, Number($("#rDisc").value)||0);
+  const method = $("#rPay").value;
+  const amount = Math.max(0, plan.price - disc);
+  m.planId = plan.id; m.start = iso(start); m.end = iso(addD(start, plan.months*30));
+  m.frozen = false; m.cancelled = false;
+  S.invoices.push({id:nextInvoiceId(), memberId:id, branchId:m.branchId, date:iso(TODAY), due:iso(addD(TODAY,7)),
+    item:plan.name, amount, paid:method?amount:0, status:method?"paid":"due", method:method||null});
+  closeOverlays(); render();
+  toast(`${m.name} renewed on ${plan.name} to ${fmtD(m.end)}`);
+}
+
+function payModal(invId){
+  const i = S.invoices.find(x=>x.id===invId); if(!i) return;
+  const m = memberById(i.memberId), bal = i.amount-i.paid;
+  openModal(`
+    <div class="modal-head"><h2 style="font-size:22px;text-transform:uppercase">Record payment</h2>
+      <div class="hint" style="margin-top:3px">${i.id} · ${m?esc(m.name):""} · ${esc(i.item)}</div></div>
+    <div class="modal-body">
+      <div class="mini"><span>Invoice total</span><b class="num">${money(i.amount)}</b></div>
+      <div class="mini"><span>Already paid</span><b class="num">${money(i.paid)}</b></div>
+      <div class="mini"><span>Balance</span><b class="num" style="color:var(--crit)">${money(bal)}</b></div>
+      <div class="grid2">
+        <div class="field"><label>Amount received</label><input id="pAmt" type="number" min="1" max="${bal}" value="${bal}"></div>
+        <div class="field"><label>Method</label><select id="pMethod"><option>UPI</option><option>Card</option><option>Cash</option><option>Bank transfer</option></select></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="1">Cancel</button>
+      <button class="btn btn-primary" data-dopay="${invId}">Record payment</button></div>`);
+}
+function doPay(invId){
+  const i = S.invoices.find(x=>x.id===invId);
+  const amt = Math.min(i.amount-i.paid, Math.max(0, Number($("#pAmt").value)||0));
+  i.paid += amt; i.method = $("#pMethod").value;
+  i.status = i.paid >= i.amount ? "paid" : "partial";
+  const m = memberById(i.memberId);
+  closeOverlays(); render();
+  toast(`${money(amt)} recorded against ${i.id}${m?" · "+m.name:""}`);
+}
+
+function newMemberModal(p){
+  p = p || {};
+  openModal(`
+    <div class="modal-head"><h2 style="font-size:22px;text-transform:uppercase">${p.name?"Convert "+esc(p.name):"New member"}</h2>
+      <div class="hint" style="margin-top:3px">Creates the membership and its first invoice</div></div>
+    <div class="modal-body">
+      <div class="grid2">
+        <div class="field"><label>Full name</label><input id="nName" value="${esc(p.name||"")}" placeholder="e.g. Omkar Jadhav"></div>
+        <div class="field"><label>Phone</label><input id="nPhone" value="${esc(p.phone||"")}" placeholder="98450 00000"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Centre</label><select id="nBranch">
+          ${BRANCHES.map(b=>`<option value="${b.id}"${(p.branchId||defaultBranch())===b.id?" selected":""}>${b.name} — ${b.city}</option>`).join("")}</select></div>
+        <div class="field"><label>Plan</label><select id="nPlan">
+          ${PLANS.map(pl=>`<option value="${pl.id}"${p.interest===pl.id?" selected":""}>${pl.name} — ${money(pl.price)}</option>`).join("")}</select></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Age</label><input id="nAge" type="number" min="12" max="80" value="26"></div>
+        <div class="field"><label>Weight (kg)</label><input id="nWeight" type="number" step="0.1" min="30" max="180" value="72"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Sex</label><select id="nSex"><option>M</option><option>F</option></select></div>
+        <div class="field"><label>Track</label><select id="nTrack">
+          <option value="fitness">Fitness</option><option value="fight"${p.fight?" selected":""}>Fight</option></select></div>
+      </div>
+      <div class="field"><label>Primary discipline</label><select id="nDisc">
+        ${DISCIPLINES.map(d=>`<option value="${d.id}"${p.wants===d.id?" selected":""}>${d.name}</option>`).join("")}</select></div>
+      <div class="grid2">
+        <div class="field"><label>Goal</label><select id="nGoal">${GOALS.map(g=>`<option>${g}</option>`).join("")}</select></div>
+        <div class="field"><label>Source</label><select id="nSource">${SOURCES.map(s=>`<option${p.source===s?" selected":""}>${s}</option>`).join("")}</select></div>
+      </div>
+      <div class="field"><label>Assign a coach</label><select id="nCoach"><option value="">No coach</option>
+        ${COACHES.map(c=>`<option value="${c.id}">${c.name} — ${c.role}</option>`).join("")}</select></div>
+      <div class="field"><label>Payment</label><select id="nPay">
+        <option value="UPI">Paid now — UPI</option><option value="Card">Paid now — Card</option>
+        <option value="Cash">Paid now — Cash</option><option value="">Invoice it, collect later</option></select></div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="1">Cancel</button>
+      <button class="btn btn-primary" data-donew="${p.leadId||""}">Create membership</button></div>`);
+}
+function doNewMember(leadId){
+  const name = ($("#nName").value||"").trim();
+  if(!name){ toast("Give the member a name first."); $("#nName").focus(); return; }
+  const plan = planById($("#nPlan").value);
+  const method = $("#nPay").value;
+  const weight = Number($("#nWeight").value)||72;
+  const track = $("#nTrack").value;
+  const id = nextMemberId();
+  const m = {
+    id, branchId:$("#nBranch").value, name, phone:($("#nPhone").value||"").trim()||newPhone(),
+    email:name.toLowerCase().replace(/[^a-z]/g,".")+"@mail.com",
+    gender:$("#nSex").value, age:Number($("#nAge").value)||26, weight,
+    planId:plan.id, joined:iso(TODAY), start:iso(TODAY), end:iso(addD(TODAY,plan.months*30)),
+    frozen:false, cancelled:false, source:$("#nSource").value, goal:$("#nGoal").value,
+    track, disciplines:[$("#nDisc").value], level:"Beginner",
+    belt: $("#nDisc").value==="BJJ" ? "White" : null,
+    coachId:$("#nCoach").value||null, record:null, nextBout:null,
+    notes:"", emergency:"—", weightClass:classFor(weight).name,
+  };
+  S.members.push(m);
+  S.invoices.push({id:nextInvoiceId(), memberId:id, branchId:m.branchId, date:iso(TODAY), due:iso(addD(TODAY,7)),
+    item:plan.name, amount:plan.price, paid:method?plan.price:0, status:method?"paid":"due", method:method||null});
+  if(leadId){ const l=S.leads.find(x=>x.id===leadId);
+    if(l){ l.stage="won"; l.log.push({ts:iso(TODAY), text:"Converted to member "+id}); } }
+  closeOverlays(); route="members"; render();
+  toast(name+" is now a member · "+id);
+  openMember(id);
+}
+
+function newLeadModal(){
+  openModal(`
+    <div class="modal-head"><h2 style="font-size:22px;text-transform:uppercase">New enquiry</h2>
+      <div class="hint" style="margin-top:3px">Walk-in, call, DM or the website trial form</div></div>
+    <div class="modal-body">
+      <div class="grid2">
+        <div class="field"><label>Name</label><input id="lName" placeholder="e.g. Tejas Sawant"></div>
+        <div class="field"><label>Phone</label><input id="lPhone" placeholder="98450 00000"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Centre</label><select id="lBranch">
+          ${BRANCHES.map(b=>`<option value="${b.id}"${defaultBranch()===b.id?" selected":""}>${b.name}</option>`).join("")}</select></div>
+        <div class="field"><label>Source</label><select id="lSource">${SOURCES.map(s=>`<option>${s}</option>`).join("")}</select></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Interested in</label><select id="lPlan">${PLANS.map(p=>`<option value="${p.id}">${p.name}</option>`).join("")}</select></div>
+        <div class="field"><label>Wants to train</label><select id="lWants">${DISCIPLINES.map(d=>`<option value="${d.id}">${d.name}</option>`).join("")}</select></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Free trial on</label><input id="lTrial" type="date" value="${iso(addD(TODAY,2))}"></div>
+        <div class="field"><label>Follow up on</label><input id="lDate" type="date" value="${iso(addD(TODAY,1))}"></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-close="1">Cancel</button>
+      <button class="btn btn-primary" id="doNewLead">Add to pipeline</button></div>`);
+}
+function doNewLead(){
+  const name = ($("#lName").value||"").trim();
+  if(!name){ toast("Give the enquiry a name first."); $("#lName").focus(); return; }
+  const plan = planById($("#lPlan").value);
+  const br = branchById($("#lBranch").value);
+  const trial = $("#lTrial").value || null;
+  const l = {id:"LD-"+(++S.seq.l), branchId:br.id, name, phone:($("#lPhone").value||"").trim()||newPhone(),
+    source:$("#lSource").value, stage: trial?"trial":"new", owner:br.manager, created:iso(TODAY),
+    followUp:$("#lDate").value||iso(addD(TODAY,1)), interest:plan.id, value:plan.price,
+    trialDate:trial, trialAttended:false, wants:$("#lWants").value,
+    log:[{ts:iso(TODAY), text:"Enquiry captured · "+$("#lSource").value}]};
+  if(trial) l.log.push({ts:iso(TODAY), text:"Free trial booked for "+fmtD(trial)});
+  S.leads.push(l);
+  closeOverlays(); route="leads"; render();
+  toast(name+" added to the "+br.name+" pipeline");
+}
+
+function moveLead(id, dir){
+  const l = S.leads.find(x=>x.id===id); if(!l) return;
+  const i = STAGES.findIndex(s=>s.id===l.stage);
+  const n = clamp(i+dir, 0, STAGES.length-1);
+  if(n!==i) setStage(id, STAGES[n].id);
+}
+function setStage(id, stage){
+  const l = S.leads.find(x=>x.id===id); if(!l) return;
+  if(stage==="won"){ newMemberModal({name:l.name, phone:l.phone, source:l.source, interest:l.interest,
+    branchId:l.branchId, wants:l.wants, fight:DISCIPLINES.find(d=>d.id===l.wants).fight, leadId:l.id}); return; }
+  l.stage = stage;
+  if(stage==="trial" && !l.trialDate) l.trialDate = iso(addD(TODAY,2));
+  if(stage==="trialdone"){ l.trialAttended = true; if(!l.trialDate) l.trialDate = iso(TODAY); }
+  l.log.push({ts:iso(TODAY), text:"Moved to "+stageById(stage).name});
+  if(OPEN_STAGES.includes(stage) && days(TODAY,l.followUp)>=0) l.followUp = iso(addD(TODAY,2));
+  render(); if($("#drawer").classList.contains("on")) openLead(id);
+  toast(l.name+" → "+stageById(stage).name);
+}
+
+const csv = rows => rows.map(r=>r.map(c=>{
+  const s=String(c??""); return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }).join(",")).join("\n");
+function showCsv(title, text){
+  openModal(`
+    <div class="modal-head"><h2 style="font-size:22px;text-transform:uppercase">${esc(title)}</h2>
+      <div class="hint" style="margin-top:3px">Select all and copy — downloads are blocked inside the preview frame.</div></div>
+    <div class="modal-body"><textarea id="csvOut" rows="12" readonly
+      style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2)">${esc(text)}</textarea></div>
+    <div class="modal-foot"><button class="btn" data-close="1">Close</button>
+      <button class="btn btn-primary" id="copyCsv">Copy to clipboard</button></div>`);
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+document.addEventListener("click", e=>{
+  const t = e.target.closest("[data-go],[data-branch],[data-member],[data-lead],[data-class],[data-mfilter],[data-bfilter],[data-ffilter],[data-mtab],[data-renew],[data-dorenew],[data-pay],[data-dopay],[data-checkin],[data-freeze],[data-cancel],[data-track],[data-nudge],[data-move],[data-setstage],[data-addlog],[data-called],[data-convert],[data-booktrial],[data-savenote],[data-usept],[data-weigh],[data-spar],[data-book],[data-unbook],[data-promote],[data-close]");
+  if(!t) return;
+  const d = t.dataset, two = k => (d[k]||"").split(":");
+
+  if(d.close!==undefined){ closeOverlays(); return; }
+  if(d.go){ e.stopPropagation(); closeOverlays(); go(d.go); return; }
+  if(d.branch){ e.stopPropagation(); closeOverlays(); UI.branch=d.branch; UI.mQuery=""; UI.cQuery=""; render(); return; }
+
+  if(d.mfilter){ UI.mFilter=d.mfilter; render(); return; }
+  if(d.bfilter){ UI.bFilter=d.bfilter; render(); return; }
+  if(d.ffilter){ UI.fFilter=d.ffilter; render(); return; }
+  if(d.mtab){ openMember(UI.tabId, d.mtab); return; }
+
+  if(d.renew){ e.stopPropagation(); renewModal(d.renew); return; }
+  if(d.dorenew){ doRenew(d.dorenew); return; }
+  if(d.pay){ e.stopPropagation(); payModal(d.pay); return; }
+  if(d.dopay){ doPay(d.dopay); return; }
+  if(d.checkin){ e.stopPropagation(); doCheckin(d.checkin); return; }
+
+  if(d.freeze){
+    const m=memberById(d.freeze); m.frozen=!m.frozen; render(); openMember(m.id, UI.tab);
+    toast(m.name+(m.frozen?" frozen — billing paused":" unfrozen — back on the floor")); return;
+  }
+  if(d.cancel){ const m=memberById(d.cancel); m.cancelled=true; closeOverlays(); render(); toast(m.name+" cancelled"); return; }
+  if(d.track){
+    const m=memberById(d.track);
+    m.track = m.track==="fight" ? "fitness" : "fight";
+    if(m.track==="fight" && !m.disciplines.some(x=>discById(x).fight)) m.disciplines.unshift("BOX");
+    render(); openMember(m.id, m.track==="fight"?"fight":"overview");
+    toast(m.name+" moved to the "+(m.track==="fight"?"fight":"fitness")+" track"); return;
+  }
+  if(d.nudge){
+    e.stopPropagation(); const m=memberById(d.nudge);
+    m.notes = (m.notes?m.notes+"\n":"")+fmtD(TODAY)+" — win-back call logged.";
+    toast("Win-back call logged for "+m.name); save(); return;
+  }
+  if(d.savenote){ const m=memberById(d.savenote); m.notes=$("#mnote").value; save(); toast("Note saved"); return; }
+  if(d.usept){
+    const p=S.pt.find(x=>x.memberId===d.usept);
+    if(p && p.used<p.total){ p.used++; openMember(d.usept, UI.tab); toast("Session logged · "+(p.total-p.used)+" left"); save(); }
+    else toast("That pack is fully used — sell a renewal.");
+    return;
+  }
+  if(d.weigh){
+    const m=memberById(d.weigh), w=Number($("#wIn").value);
+    if(!w || w<25 || w>200){ toast("Enter a weight between 25 and 200 kg."); return; }
+    const before = m.weightClass;
+    m.weight = Math.round(w*10)/10; m.weightClass = classFor(m.weight).name;
+    render(); openMember(m.id, "fight");
+    toast(`${m.name} weighed in at ${m.weight} kg`+(before!==m.weightClass?` · now ${m.weightClass}`:""));
+    return;
+  }
+  if(d.spar){
+    const m=memberById(d.spar), r=clamp(Number($("#spRounds").value)||0,1,15);
+    S.spars.push({memberId:m.id, branchId:m.branchId, ts:iso(TODAY), rounds:r, partner:$("#spType").value});
+    render(); openMember(m.id, "fight");
+    toast(`${r} rounds logged for ${m.name} · readiness ${readiness(m).total}`);
+    return;
+  }
+
+  if(d.move){ e.stopPropagation(); const [id,dir]=two("move"); moveLead(id, Number(dir)); return; }
+  if(d.setstage){ e.stopPropagation(); const [id,st]=two("setstage"); setStage(id, st); return; }
+  if(d.booktrial){
+    const l=S.leads.find(x=>x.id===d.booktrial);
+    l.trialDate = iso(addD(TODAY,2)); l.stage="trial";
+    l.log.push({ts:iso(TODAY), text:"Free trial booked for "+fmtD(l.trialDate)});
+    render(); openLead(l.id); toast("Free trial booked for "+fmtD(l.trialDate)); return;
+  }
+  if(d.called){
+    e.stopPropagation(); const l=S.leads.find(x=>x.id===d.called);
+    l.log.push({ts:iso(TODAY), text:"Call logged by "+l.owner});
+    l.followUp = iso(addD(TODAY,2));
+    if(l.stage==="new") l.stage="contacted";
+    render(); if($("#drawer").classList.contains("on")) openLead(l.id);
+    toast("Call logged · following up "+fmtDs(l.followUp)); return;
+  }
+  if(d.addlog){
+    const l=S.leads.find(x=>x.id===d.addlog), v=($("#logtxt").value||"").trim();
+    if(!v) return; l.log.push({ts:iso(TODAY), text:v}); openLead(l.id); save(); return;
+  }
+  if(d.convert){
+    const l=S.leads.find(x=>x.id===d.convert);
+    newMemberModal({name:l.name, phone:l.phone, source:l.source, interest:l.interest, branchId:l.branchId,
+      wants:l.wants, fight:DISCIPLINES.find(x=>x.id===l.wants).fight, leadId:l.id});
+    return;
+  }
+
+  if(d.book){
+    const c=S.classes.find(x=>x.id===d.book), mid=$("#bookSel").value;
+    if(!mid){ toast("No eligible members at this centre."); return; }
+    (c.booked.length<c.cap ? c.booked : c.waitlist).push(mid);
+    openClass(c.id); render();
+    toast(memberById(mid).name+(c.booked.includes(mid)?" booked into ":" waitlisted for ")+c.name); return;
+  }
+  if(d.unbook){
+    const [cid,mid]=two("unbook"), c=S.classes.find(x=>x.id===cid);
+    c.booked=c.booked.filter(x=>x!==mid); c.waitlist=c.waitlist.filter(x=>x!==mid);
+    if(c.booked.length<c.cap && c.waitlist.length) c.booked.push(c.waitlist.shift());
+    openClass(cid); render(); toast("Removed from "+c.name); return;
+  }
+  if(d.promote){
+    const [cid,mid]=two("promote"), c=S.classes.find(x=>x.id===cid);
+    c.waitlist=c.waitlist.filter(x=>x!==mid); c.booked.push(mid);
+    openClass(cid); render(); toast(memberById(mid).name+" moved off the waitlist"); return;
+  }
+
+  if(d.lead){ openLead(d.lead); return; }
+  if(d.class){ openClass(d.class); return; }
+  if(d.member){ openMember(d.member, d.mtabjump || undefined); return; }
+});
+
+document.addEventListener("input", e=>{
+  if(e.target.id==="mq"||e.target.id==="cq"){
+    const which = e.target.id, p = e.target.selectionStart;
+    if(which==="mq") UI.mQuery = e.target.value; else UI.cQuery = e.target.value;
+    render();
+    const el = $("#"+which); if(el){ el.focus(); el.setSelectionRange(p,p); }
+  }
+  if(e.target.id==="gsearch") globalSearch(e.target.value);
+});
+document.addEventListener("change", e=>{
+  if(e.target.id==="msort"){ UI.mSort=e.target.value; render(); }
+  if(e.target.id==="fsort"){ UI.fSort=e.target.value; render(); }
+});
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeOverlays(); $("#gpop").innerHTML=""; } });
+
+$("#scrim").addEventListener("click", closeOverlays);
+$("#newBtn").addEventListener("click", ()=>newMemberModal());
+$("#checkinBtn").addEventListener("click", ()=>{ go("checkin"); setTimeout(()=>{const el=$("#cq"); if(el) el.focus();},40); });
+$("#resetBtn").addEventListener("click", ()=>{
+  S = seed(); Object.assign(UI,{branch:"ALL",mFilter:"all",mQuery:"",cQuery:"",bFilter:"all",fFilter:"all",fSort:"readiness"});
+  closeOverlays(); render(); toast("Demo data restored");
+});
+$("#themeBtn").addEventListener("click", ()=>{
+  const cur = document.documentElement.getAttribute("data-theme");
+  const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const next = cur ? (cur==="dark"?"light":"dark") : (sysDark?"light":"dark");
+  document.documentElement.setAttribute("data-theme", next);
+  try{ localStorage.setItem(KEY+"-theme", next); }catch(err){}
+});
+try{ const th=localStorage.getItem(KEY+"-theme"); if(th) document.documentElement.setAttribute("data-theme", th); }catch(e){}
+
+document.addEventListener("click", e=>{
+  if(e.target.id==="newLead"){ newLeadModal(); return; }
+  if(e.target.id==="doNewLead"){ doNewLead(); return; }
+  if(e.target.dataset && e.target.dataset.donew!==undefined){ doNewMember(e.target.dataset.donew); return; }
+  if(e.target.id==="exportBtn"){
+    showCsv("Members export", csv([["Member ID","Centre","Name","Phone","Plan","Track","Disciplines","Level","Weight class","Status","Start","Expires","Visits 30d","Dues"]]
+      .concat(B(S.members).filter(m=>!m.cancelled).map(m=>[m.id,branchById(m.branchId).name,m.name,m.phone,planById(m.planId).name,
+        m.track,m.disciplines.map(x=>discById(x).short).join(" / "),m.level,m.weightClass,statusOf(m).key,m.start,m.end,
+        visitsSince(m.id,30),duesOf(m.id)]))));
+    return;
+  }
+  if(e.target.id==="exportInv"){
+    showCsv("Invoices export", csv([["Invoice","Centre","Member","Item","Issued","Due","Amount","Paid","Status","Method"]]
+      .concat(B(S.invoices).map(i=>{const m=memberById(i.memberId);
+        return [i.id,branchById(i.branchId).name,m?m.name:"",i.item,i.date,i.due,i.amount,i.paid,i.status,i.method||""];}))));
+    return;
+  }
+  if(e.target.id==="copyCsv"){
+    const ta=$("#csvOut"); ta.select();
+    if(navigator.clipboard) navigator.clipboard.writeText(ta.value).then(()=>toast("Copied")).catch(()=>toast("Select the text and copy"));
+    else toast("Select the text and copy");
+    return;
+  }
+  if(!e.target.closest(".search")) $("#gpop").innerHTML = "";
+});
+
+/* ---------------- global search ---------------- */
+function globalSearch(q){
+  q = (q||"").trim().toLowerCase();
+  const pop = $("#gpop");
+  if(q.length<2){ pop.innerHTML=""; return; }
+  const hits = [];
+  S.members.filter(m=>(m.name+" "+m.id+" "+m.phone).toLowerCase().includes(q)).slice(0,6)
+    .forEach(m=>hits.push({kind:"member", id:m.id, title:m.name,
+      sub:m.id+" · "+branchById(m.branchId).name+" · "+planById(m.planId).name+" · "+statusOf(m).label}));
+  S.leads.filter(l=>(l.name+" "+l.id+" "+l.phone).toLowerCase().includes(q)).slice(0,4)
+    .forEach(l=>hits.push({kind:"lead", id:l.id, title:l.name, sub:"Lead · "+branchById(l.branchId).name+" · "+stageById(l.stage).name}));
+  S.invoices.filter(i=>i.id.toLowerCase().includes(q)).slice(0,3)
+    .forEach(i=>{const m=memberById(i.memberId);
+      hits.push({kind:"member", id:i.memberId, title:i.id, sub:(m?m.name+" · ":"")+money(i.amount)+" · "+i.status});});
+  S.classes.filter(c=>c.name.toLowerCase().includes(q)).slice(0,3)
+    .forEach(c=>hits.push({kind:"class", id:c.id, title:c.name,
+      sub:branchById(c.branchId).name+" · "+DAYNAMES[c.dow]+" "+c.time+" · "+c.room}));
+  pop.innerHTML = hits.length
+    ? `<div class="search-pop">${hits.map(h=>`<button data-${h.kind}="${h.id}">
+        <b style="font-weight:600;font-size:13px">${esc(h.title)}</b>
+        <div class="muted" style="font-size:11px">${esc(h.sub)}</div></button>`).join("")}</div>`
+    : `<div class="search-pop"><div class="empty">Nothing matches "${esc(q)}"</div></div>`;
+}
+
+/* ---------------- clock ---------------- */
+function tick(){
+  const now = new Date();
+  $("#clock").textContent = now.toLocaleDateString("en-IN",{weekday:"short",day:"2-digit",month:"short"})
+    + " · " + now.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
+}
+tick(); setInterval(tick, 30000);
+render();
+</script>
+
+</body>
+</html>
